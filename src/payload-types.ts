@@ -14,6 +14,7 @@ export interface Config {
     users: User;
     media: Media;
     company: Company;
+    investment: Investment;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -23,6 +24,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     company: CompanySelect<false> | CompanySelect<true>;
+    investment: InvestmentSelect<false> | InvestmentSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -129,6 +131,21 @@ export interface Company {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investment".
+ */
+export interface Investment {
+  id: number;
+  company?: (number | null) | Company;
+  investmentDate: string;
+  investmentAmount: number;
+  currentValue?: number | null;
+  notes?: string | null;
+  displayTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -145,6 +162,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'company';
         value: number | Company;
+      } | null)
+    | ({
+        relationTo: 'investment';
+        value: number | Investment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -249,6 +270,20 @@ export interface CompanySelect<T extends boolean = true> {
   ytdReturn?: T;
   weekToDateReturn?: T;
   oneYearReturn?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investment_select".
+ */
+export interface InvestmentSelect<T extends boolean = true> {
+  company?: T;
+  investmentDate?: T;
+  investmentAmount?: T;
+  currentValue?: T;
+  notes?: T;
+  displayTitle?: T;
   updatedAt?: T;
   createdAt?: T;
 }

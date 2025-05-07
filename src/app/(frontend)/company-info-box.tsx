@@ -11,7 +11,7 @@ interface CasePoint {
 interface CompanyInfoBoxProps {
   name: string
   ticker: string
-  recommendationDate: date
+  recommendationDate: Date
   priceTarget?: number
   timeframe?: string
   currentPrice: number
