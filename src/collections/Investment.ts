@@ -8,10 +8,28 @@ export const Investment: CollectionConfig = {
   },
   fields: [
     {
+      name: 'investor',
+      label: 'Investor',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+    },
+    {
       name: 'company',
       label: 'Company',
       type: 'relationship',
       relationTo: 'company',
+      required: true,
+    },
+    {
+      name: 'transactionType',
+      label: 'Transaction Type',
+      type: 'select',
+      options: [
+        { label: 'Buy', value: 'buy' },
+        { label: 'Sell', value: 'sell' },
+      ],
+      required: true,
     },
     {
       name: 'investmentDate',
@@ -20,15 +38,16 @@ export const Investment: CollectionConfig = {
       required: true,
     },
     {
-      name: 'investmentAmount',
-      label: 'Investment Amount',
+      name: 'shares',
+      label: 'Shares',
       type: 'number',
       required: true,
     },
     {
-      name: 'currentValue',
-      label: 'Current Value',
+      name: 'pricePerShare',
+      label: 'Price Per Share',
       type: 'number',
+      required: true,
     },
     {
       name: 'notes',
