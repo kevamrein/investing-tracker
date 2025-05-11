@@ -9,6 +9,7 @@
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    investors: InvestorAuthOperations;
   };
   collections: {
     users: User;
@@ -16,6 +17,7 @@ export interface Config {
     company: Company;
     investment: Investment;
     investmentRecommendation: InvestmentRecommendation;
+    investors: Investor;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -27,6 +29,7 @@ export interface Config {
     company: CompanySelect<false> | CompanySelect<true>;
     investment: InvestmentSelect<false> | InvestmentSelect<true>;
     investmentRecommendation: InvestmentRecommendationSelect<false> | InvestmentRecommendationSelect<true>;
+    investors: InvestorsSelect<false> | InvestorsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -37,15 +40,37 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user: User & {
-    collection: 'users';
-  };
+  user:
+    | (User & {
+        collection: 'users';
+      })
+    | (Investor & {
+        collection: 'investors';
+      });
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
 export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface InvestorAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -155,13 +180,32 @@ export interface Investment {
  */
 export interface InvestmentRecommendation {
   id: number;
-  investor: number | User;
+  investor: number | Investor;
   company: number | Company;
   recommendationDate: string;
   buySellHoldRecommendation: 'buy' | 'sell' | 'hold';
   recommendationReasoning: string;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investors".
+ */
+export interface Investor {
+  id: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  password: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -189,12 +233,21 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'investmentRecommendation';
         value: number | InvestmentRecommendation;
+      } | null)
+    | ({
+        relationTo: 'investors';
+        value: number | Investor;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'investors';
+        value: number | Investor;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -204,10 +257,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'investors';
+        value: number | Investor;
+      };
   key?: string | null;
   value?:
     | {
@@ -325,6 +383,24 @@ export interface InvestmentRecommendationSelect<T extends boolean = true> {
   recommendationReasoning?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investors_select".
+ */
+export interface InvestorsSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  password?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

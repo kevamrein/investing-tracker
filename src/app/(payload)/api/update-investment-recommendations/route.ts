@@ -24,18 +24,13 @@ export async function GET(request: Request) {
     id: process.env.PROCESSING_USER_ID as string,
   })
 
-  const users = await payload.find({
-    collection: 'users',
-    where: {
-      isInvestor: {
-        equals: true,
-      },
-    },
+  const investors = await payload.find({
+    collection: 'investors',
     pagination: false,
   })
 
-  if (!users) {
-    return new Response('No users found', {
+  if (!investors) {
+    return new Response('No investors found', {
       status: 200,
     })
   }
@@ -59,12 +54,12 @@ export async function GET(request: Request) {
     {} as Record<number, Company>,
   )
 
-  for (const user of users.docs) {
+  for (const investor of investors.docs) {
     const investments = await payload.find({
       collection: 'investment',
       where: {
         investor: {
-          equals: user.id,
+          equals: investor.id,
         },
       },
       pagination: false,
@@ -99,7 +94,7 @@ export async function GET(request: Request) {
       payload.create({
         collection: 'investmentRecommendation',
         data: {
-          investor: user.id,
+          investor: investor.id,
           company: companyId,
           recommendationDate: new Date().toISOString(),
           buySellHoldRecommendation: investmentRecommendationResponse.buySellHoldRecommendation as

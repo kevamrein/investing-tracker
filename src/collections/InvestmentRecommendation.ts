@@ -7,7 +7,7 @@ export const InvestmentRecommendation: CollectionConfig = {
       name: 'investor',
       label: 'Investor',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'investors',
       required: true,
     },
     {

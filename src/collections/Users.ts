@@ -9,11 +9,5 @@ export const Users: CollectionConfig = {
   fields: [
     // Email added by default
     // Add more fields as needed
-    {
-      name: 'isInvestor',
-      label: 'Is Investor',
-      type: 'checkbox',
-      defaultValue: false,
-    },
   ],
 }
