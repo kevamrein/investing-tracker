@@ -9,7 +9,6 @@
 export interface Config {
   auth: {
     users: UserAuthOperations;
-    investors: InvestorAuthOperations;
   };
   collections: {
     users: User;
@@ -40,13 +39,9 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user:
-    | (User & {
-        collection: 'users';
-      })
-    | (Investor & {
-        collection: 'investors';
-      });
+  user: User & {
+    collection: 'users';
+  };
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -70,31 +65,12 @@ export interface UserAuthOperations {
     password: string;
   };
 }
-export interface InvestorAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
-  };
-}
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
-  isInvestor?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -194,18 +170,12 @@ export interface InvestmentRecommendation {
  */
 export interface Investor {
   id: number;
+  email: string;
   firstName?: string | null;
   lastName?: string | null;
-  password: string | null;
+  password: string;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -239,15 +209,10 @@ export interface PayloadLockedDocument {
         value: number | Investor;
       } | null);
   globalSlug?: string | null;
-  user:
-    | {
-        relationTo: 'users';
-        value: number | User;
-      }
-    | {
-        relationTo: 'investors';
-        value: number | Investor;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -257,15 +222,10 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user:
-    | {
-        relationTo: 'users';
-        value: number | User;
-      }
-    | {
-        relationTo: 'investors';
-        value: number | Investor;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   key?: string | null;
   value?:
     | {
@@ -295,7 +255,6 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  isInvestor?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -389,18 +348,12 @@ export interface InvestmentRecommendationSelect<T extends boolean = true> {
  * via the `definition` "investors_select".
  */
 export interface InvestorsSelect<T extends boolean = true> {
+  email?: T;
   firstName?: T;
   lastName?: T;
   password?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

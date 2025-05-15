@@ -5,7 +5,6 @@ export const Investor: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
   },
-  auth: true,
   fields: [
     {
       name: 'email',
