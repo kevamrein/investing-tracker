@@ -34,7 +34,7 @@ export async function generateStockInformation(
   const xAi = createXai({
     apiKey: process.env.X_AI_API_KEY,
   })
-  const model = xAi('grok-beta')
+  const model = xAi('grok-3-beta')
   const { object } = await generateObject({
     model: model,
     schema: z.object({
