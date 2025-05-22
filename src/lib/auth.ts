@@ -63,11 +63,11 @@ export const authOptions: NextAuthOptions = {
 
           // Return the user for session handling
           return {
-            id: user.id,
+            id: String(user.id),
             email: user.email,
             firstName: user.firstName || '',
             lastName: user.lastName || '',
-            accessToken: user.id,
+            accessToken: String(user.id),
           }
         } catch (error) {
           console.error('Auth error:', error)
@@ -78,6 +78,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      console.log('JWT user', user)
       // Pass attributes from the user to the token
       if (user) {
         token.id = user.id
@@ -91,12 +92,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // Pass attributes from the token to the session
       if (token && session.user) {
+        console.log('Session token', token)
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.firstName = token.firstName as string
         session.user.lastName = token.lastName as string
         session.accessToken = token.accessToken as string
       }
+      console.log('Final session', session)
       return session
     },
   },

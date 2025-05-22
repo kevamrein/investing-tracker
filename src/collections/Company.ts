@@ -1,33 +1,9 @@
 import { CollectionConfig } from 'payload'
-import { generateStockInformation } from '@/ai/ai-service'
 
 export const Company: CollectionConfig = {
   slug: 'company',
   admin: {
     useAsTitle: 'name',
-    group: 'Test Group',
-  },
-  hooks: {
-    beforeChange: [
-      async ({ data }) => {
-        if (!data.ticker) {
-          return data
-        }
-
-        const response = await generateStockInformation({ ticker: data.ticker })
-        const date = new Date()
-        data.bullCase.push({
-          opinionText: response.bullCase,
-          opinionDate: date,
-        })
-        data.bearCase.push({
-          opinionText: response.bearCase,
-          opinionDate: date,
-        })
-
-        return data
-      },
-    ],
   },
   fields: [
     {

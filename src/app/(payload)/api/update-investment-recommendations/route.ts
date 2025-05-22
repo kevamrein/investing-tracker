@@ -1,6 +1,11 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { generateInvestmentRecommendation, PreviousInvestment } from '@/ai/ai-service'
+import {
+  generateInvestmentRecommendation,
+  generateInvestmentRecommendationWithLiveSearch,
+  generateStockInformationWithLiveSearch,
+  PreviousInvestment,
+} from '@/ai/ai-service'
 import { Company } from '@/payload-types'
 
 export async function GET(request: Request) {
@@ -88,10 +93,11 @@ export async function GET(request: Request) {
               }
             })
 
-          const investmentRecommendationResponse = await generateInvestmentRecommendation({
-            ticker: company.ticker,
-            investments: investmentsInCompany,
-          })
+          const investmentRecommendationResponse =
+            await generateInvestmentRecommendationWithLiveSearch({
+              ticker: company.ticker,
+              investments: investmentsInCompany,
+            })
 
           await payload.create({
             collection: 'investmentRecommendation',
