@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       pagination: false,
     })
 
-    if (!investors) {
+    if (investors.docs.length === 0) {
       return new Response('No investors found', {
         status: 200,
       })
