@@ -1,42 +1,29 @@
-import { CompanyInfoBox } from './company-info-box'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { Header } from './components/Header'
+import { SearchBar } from './components/SearchBar'
+import { RecentMoversWrapper } from './components/RecentMoversWrapper'
 
-export default async function HomePage() {
-  const payload = await getPayload({ config })
-  const result = await payload.find({
-    collection: 'company',
-  })
-
-  const companies = result.docs.map((doc) => {
-    return {
-      name: doc.name,
-      ticker: doc.ticker,
-      recommendationDate: doc.recommendationDate,
-      priceTarget: doc.priceTarget,
-      timeframe: doc.timeframe,
-      currentPrice: doc.currentPrice,
-      bullCase: doc.bullCase.map((point) => ({
-        date: point.opinionDate,
-        point: point.opinionText,
-      })),
-      bearCase: doc.bearCase.map((point) => ({
-        date: point.opinionDate,
-        point: point.opinionText,
-      })),
-      performance: {
-        pastYear: doc.oneYearReturn,
-        pastWeek: doc.weekToDateReturn,
-        yearToDate: doc.ytdReturn,
-      },
-    }
-  })
-
+export default function HomePage() {
   return (
-    <div>
-      {companies.map((company, index) => (
-        <CompanyInfoBox key={index} {...company} />
-      ))}
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="py-10">
+        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Investment Tracker</h1>
+            <p className="text-lg text-gray-600">
+              Search for stocks or check out the recent market movers
+            </p>
+          </div>
+
+          <div className="max-w-2xl mx-auto mb-12">
+            <SearchBar />
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <RecentMoversWrapper />
+          </div>
+        </div>
+      </main>
     </div>
   )
 }

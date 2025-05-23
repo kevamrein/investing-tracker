@@ -16,6 +16,7 @@ export interface Config {
     company: Company;
     investment: Investment;
     investmentRecommendation: InvestmentRecommendation;
+    investors: Investor;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -27,6 +28,7 @@ export interface Config {
     company: CompanySelect<false> | CompanySelect<true>;
     investment: InvestmentSelect<false> | InvestmentSelect<true>;
     investmentRecommendation: InvestmentRecommendationSelect<false> | InvestmentRecommendationSelect<true>;
+    investors: InvestorsSelect<false> | InvestorsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -69,7 +71,6 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  isInvestor?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -155,11 +156,24 @@ export interface Investment {
  */
 export interface InvestmentRecommendation {
   id: number;
-  investor: number | User;
+  investor: number | Investor;
   company: number | Company;
   recommendationDate: string;
   buySellHoldRecommendation: 'buy' | 'sell' | 'hold';
   recommendationReasoning: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investors".
+ */
+export interface Investor {
+  id: number;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  password: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -189,6 +203,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'investmentRecommendation';
         value: number | InvestmentRecommendation;
+      } | null)
+    | ({
+        relationTo: 'investors';
+        value: number | Investor;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -237,7 +255,6 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  isInvestor?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -323,6 +340,18 @@ export interface InvestmentRecommendationSelect<T extends boolean = true> {
   recommendationDate?: T;
   buySellHoldRecommendation?: T;
   recommendationReasoning?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investors_select".
+ */
+export interface InvestorsSelect<T extends boolean = true> {
+  email?: T;
+  firstName?: T;
+  lastName?: T;
+  password?: T;
   updatedAt?: T;
   createdAt?: T;
 }

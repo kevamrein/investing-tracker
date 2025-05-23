@@ -7,7 +7,8 @@ export const InvestmentRecommendation: CollectionConfig = {
       name: 'investor',
       label: 'Investor',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'investors',
+      index: true,
       required: true,
     },
     {
@@ -15,6 +16,7 @@ export const InvestmentRecommendation: CollectionConfig = {
       label: 'Company',
       type: 'relationship',
       relationTo: 'company',
+      index: true,
       required: true,
     },
     {

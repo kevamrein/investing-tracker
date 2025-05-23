@@ -61,7 +61,6 @@ export const Investment: CollectionConfig = {
       hooks: {
         afterRead: [
           async ({ data, req }) => {
-            console.log(data.company)
             const company = await req.payload.findByID({
               collection: 'company',
               id: data.company,

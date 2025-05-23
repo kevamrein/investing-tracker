@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { generateStockInformation } from '@/ai/ai-service'
+import { generateStockInformationWithLiveSearch } from '@/ai/ai-service'
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
   companies.docs.forEach(async (company) => {
     const { ticker } = company
-    const response = await generateStockInformation({ ticker })
+    const response = await generateStockInformationWithLiveSearch({ ticker })
     const date = new Date().toISOString()
     let bullCase = company.bullCase || []
     let bearCase = company.bearCase || []
