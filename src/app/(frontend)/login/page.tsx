@@ -20,7 +20,6 @@ export default function LoginPage() {
     setError('')
 
     if (status === 'authenticated' && session) {
-      console.log('User is already authenticated:', session)
       router.push('/')
     }
 
@@ -36,8 +35,6 @@ export default function LoginPage() {
         callbackUrl: '/',
       })
 
-      console.log('SignIn result:', result)
-
       if (!result) {
         setError('Connection error. Please try again.')
         setIsLoading(false)
@@ -51,7 +48,6 @@ export default function LoginPage() {
       }
 
       // Login successful
-      console.log('Login successful, redirecting...')
       router.push('/')
       setIsLoading(false)
 

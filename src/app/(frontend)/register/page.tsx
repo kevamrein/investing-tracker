@@ -37,9 +37,7 @@ export default function RegisterPage() {
     setError('')
     // Prepare secure password for sign in
     const plainPassword = formData.get('password') as string
-    console.log(`plainPassword: ${plainPassword}`)
     const securePassword = passwordSecurity.preparePasswordForTransmission(plainPassword)
-    console.log(`securePassword: ${securePassword}`)
 
     // Replace the original password with the secure one
     formData.set('password', securePassword)

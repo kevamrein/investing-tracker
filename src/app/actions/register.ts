@@ -1,9 +1,7 @@
 'use server'
 
-import { getPayload } from 'payload'
 import config from '@/payload.config'
-import passwordSecurity from '@/lib/passwordSecurity'
-import { json } from 'stream/consumers'
+import { getPayload } from 'payload'
 
 export async function registerUser(formData: FormData) {
   const email = formData.get('email') as string
