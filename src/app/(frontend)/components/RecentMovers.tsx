@@ -1,6 +1,4 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
-import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from '@heroicons/react/24/solid'
+'use client'
 
 interface RecommendationChange {
   company: string
@@ -10,85 +8,46 @@ interface RecommendationChange {
   date: Date
 }
 
-function getStatusColor(rec: string) {
-  switch (rec.toLowerCase()) {
+interface RecentMoversProps {
+  changes: RecommendationChange[]
+}
+
+function getRecommendationStyle(rec: 'buy' | 'sell' | 'hold') {
+  switch (rec) {
     case 'buy':
-      return 'text-green-600'
+      return 'bg-green-100 text-green-800'
     case 'sell':
-      return 'text-red-600'
+      return 'bg-red-100 text-red-800'
     default:
-      return 'text-yellow-600'
+      return 'bg-gray-100 text-gray-800'
   }
 }
 
-function getChangeIcon(previous: string, current: string) {
-  if (previous === current) {
-    return <MinusIcon className="h-5 w-5 text-gray-400" />
-  }
-  return current === 'buy' ? (
-    <ArrowUpIcon className="h-5 w-5 text-green-600" />
-  ) : (
-    <ArrowDownIcon className="h-5 w-5 text-red-600" />
-  )
-}
-
-export async function RecentMovers() {
-  const payload = await getPayload({ config })
-
-  // Get the latest recommendations
-  const recommendations = await payload.find({
-    collection: 'investmentRecommendation',
-    sort: '-recommendationDate',
-    limit: 5,
-    depth: 1, // This will populate the company relationship
-  })
-
-  const changes = await Promise.all(
-    recommendations.docs.map(async (doc) => {
-      const company =
-        typeof doc.company === 'object'
-          ? doc.company
-          : await payload.findByID({
-              collection: 'company',
-              id: doc.company,
-            })
-
-      return {
-        company: company.name,
-        ticker: company.ticker,
-        currentRec: doc.buySellHoldRecommendation,
-        reasoning: doc.recommendationReasoning,
-        date: new Date(doc.recommendationDate),
-      }
-    }),
-  )
-
+export function RecentMovers({ changes }: RecentMoversProps) {
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Recent Recommendations</h3>
-      </div>
-      <div className="border-t border-gray-200">
-        <ul role="list" className="divide-y divide-gray-200">
-          {changes.map((change, index) => (
-            <li key={index} className="px-4 py-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">{change.company}</p>
-                    <p className="text-sm text-gray-500">{change.ticker}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span className={`text-sm ${getStatusColor(change.currentRec)}`}>
+    <div className="bg-white shadow rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Market Movers</h2>
+        <div className="space-y-4">
+          {changes.map((change) => (
+            <div key={`${change.ticker}-${change.date.toISOString()}`} className="flex items-start">
+              <div className="ml-3 flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-900">
+                    {change.company} ({change.ticker})
+                  </p>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getRecommendationStyle(change.currentRec)}`}
+                  >
                     {change.currentRec.toUpperCase()}
                   </span>
                 </div>
+                <p className="text-sm text-gray-500 mt-1">{change.reasoning}</p>
+                <p className="text-xs text-gray-400 mt-1">{change.date.toLocaleDateString()}</p>
               </div>
-              <p className="mt-2 text-sm text-gray-600">{change.reasoning}</p>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   )

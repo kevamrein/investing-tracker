@@ -108,26 +108,49 @@ export default async function StockPage({ params }: StockPageProps) {
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              {/* Commented out price and YTD return for future implementation
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-semibold">
-                  ${company.currentPrice?.toFixed(2) || 'N/A'}
-                </span>
-                <span
-                  className={`px-2 py-1 rounded-lg text-sm font-medium ${
-                    company.ytdReturn && company.ytdReturn > 0
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  ({company.ytdReturn?.toFixed(2) || 0}%)
-                </span>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-500">Current Price</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-semibold">
+                      ${company.currentPrice?.toFixed(2) || 'N/A'}
+                    </span>
+                    {/* Temporarily removed YTD return display until we have reliable data
+                    <span
+                      className={`px-2 py-1 rounded-lg text-sm font-medium ${
+                        company.ytdReturn && company.ytdReturn > 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      ({company.ytdReturn?.toFixed(2) || 0}%)
+                    </span>
+                    */}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-500">Price Target</div>
+                  <div className="text-lg font-medium">
+                    ${company.priceTarget?.toFixed(2) || 'N/A'}
+                  </div>
+                </div>
               </div>
-              */}
-              <span className="text-sm text-gray-500">
-                Updated: {new Date(company.recommendationDate).toLocaleDateString()}
-              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-500">Initial Recommendation Date</div>
+                  <div className="text-base">
+                    {new Date(company.recommendationDate).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-500">Investment Timeframe</div>
+                  <div className="text-base">{company.timeframe || 'Not specified'}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

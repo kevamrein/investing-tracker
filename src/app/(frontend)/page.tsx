@@ -1,7 +1,6 @@
 import { Header } from './components/Header'
 import { SearchBar } from './components/SearchBar'
-import { RecentMovers } from './components/RecentMovers'
-import { searchCompanies } from '../actions/search'
+import { RecentMoversWrapper } from './components/RecentMoversWrapper'
 
 export default function HomePage() {
   return (
@@ -17,11 +16,11 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-2xl mx-auto mb-12">
-            <SearchBar onSearch={searchCompanies} />
+            <SearchBar />
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            <RecentMovers />
+          <div className="max-w-2xl mx-auto">
+            <RecentMoversWrapper />
           </div>
         </div>
       </main>

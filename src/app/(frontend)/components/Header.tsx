@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 
 export async function Header() {
   const session = await getServerSession(authOptions)
-  console.log('Header session:', session)
   const user = session?.user
 
   return (
