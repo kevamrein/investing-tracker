@@ -4,7 +4,6 @@ export const Investment: CollectionConfig = {
   slug: 'investment',
   admin: {
     useAsTitle: 'displayTitle',
-    group: 'Test Group',
   },
   fields: [
     {
@@ -62,7 +61,7 @@ export const Investment: CollectionConfig = {
         afterRead: [
           async ({ data, req }) => {
             if (!data) return 'No data'
-            
+
             const company = await req.payload.findByID({
               collection: 'company',
               id: data.company,

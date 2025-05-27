@@ -88,7 +88,7 @@ export async function generateStockInformationWithLiveSearch(
           },
           {
             role: 'user',
-            content: `For the company with the ticker symbol ${stockData.ticker}, provide a concise bull case (3 sentences max) and bear case (3 sentences max) based on unique, recent information that offers a potential investing edge. Ensure all information is verifiable and prioritize precision.`,
+            content: `For the company with ticker symbol ${stockData.ticker}, provide a concise bull case (3 sentences max) and bear case (3 sentences max) based on unique, recent, and verifiable information that highlights non-consensus opportunities or risks. Prioritize early signals, such as emerging trends, underreported metrics, or shifts in competitive dynamics, that could lead to outsized returns or significant losses. Avoid mainstream narratives and focus on precise, data-driven insights from reliable sources.`,
           },
         ],
         live_search: true,
@@ -219,7 +219,7 @@ export async function generateInvestmentRecommendationWithLiveSearch(
           },
           {
             role: 'user',
-            content: `For the ticker symbol ${stockData.ticker}, if the JSON list of investments provided below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), and total current value based on the latest market price; if the list is empty, base the recommendation on current market conditions and recent stock performance. Recommend a buy, sell, or hold action tailored for a slightly risk-tolerant investor using extra funds to beat the market, justifying the recommendation in 2 sentences max, ensuring the recommendation is actionable and aligns with the goal of outperforming the market. Ensure all information is verifiable and prioritize precision. Investments: ${JSON.stringify(stockData.investments)}`,
+            content: `For the ticker symbol ${stockData.ticker}, if the JSON list of investments below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), total current value using the latest market price, and estimate capital gains tax implications (short-term vs. long-term, assuming U.S. tax rates). Provide a buy, sell, or hold recommendation tailored for a slightly risk-tolerant investor aiming to beat the market with extra funds, prioritizing non-consensus insights, emerging trends, or underappreciated risks, and factoring in tax implications to maximize after-tax returns; justify it in 4 sentences max with verifiable, data-driven reasoning. If the investment list is empty, base the recommendation on current market conditions and recent stock performance, assuming a new position with no tax history. Investments: ${JSON.stringify(stockData.investments)}`,
           },
         ],
         live_search: true,
