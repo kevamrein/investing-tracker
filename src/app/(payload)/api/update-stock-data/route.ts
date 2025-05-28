@@ -61,6 +61,10 @@ export async function GET(request: Request) {
       opinionText: response.bearCase,
       opinionDate: date,
     })
+
+    console.log(`Bull case: ${JSON.stringify(bullCase)}`)
+    console.log(`Bear case: ${JSON.stringify(bearCase)}`)
+
     await payload.update({
       collection: 'company',
       id: company.id,
