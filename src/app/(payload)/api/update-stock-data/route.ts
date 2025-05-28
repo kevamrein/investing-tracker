@@ -77,6 +77,7 @@ export async function GET(request: Request) {
     })
   })
 
+  console.log('Recommendations updated')
   return new Response('Recommendations updated', {
     status: 200,
   })
