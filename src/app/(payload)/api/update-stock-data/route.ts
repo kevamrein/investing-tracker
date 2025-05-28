@@ -11,6 +11,7 @@ export async function GET(request: Request) {
   }
 
   if (!process.env.PROCESSING_USER_ID) {
+    console.error('Processing user ID not set')
     return new Response('Processing user ID not set', {
       status: 500,
     })
@@ -23,18 +24,29 @@ export async function GET(request: Request) {
     id: process.env.PROCESSING_USER_ID as string,
   })
 
+  if (!processingUser) {
+    console.error('Processing user not found')
+    return new Response('Processing user not found', {
+      status: 500,
+    })
+  }
+
+  console.log('Found processing user')
+
   const companies = await payload.find({
     collection: 'company',
     pagination: false,
   })
 
   if (!companies) {
+    console.error('No companies found')
     return new Response('No companies found', {
       status: 200,
     })
   }
 
   companies.docs.forEach(async (company) => {
+    console.log('Updating company', company.ticker)
     const { ticker } = company
     const response = await generateStockInformationWithLiveSearch({ ticker })
     const date = new Date().toISOString()
