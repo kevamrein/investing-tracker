@@ -14,6 +14,13 @@ export const Investment: CollectionConfig = {
       required: true,
     },
     {
+      name: 'investorMapping',
+      label: 'Investor',
+      type: 'relationship',
+      relationTo: 'investors',
+      required: true,
+    },
+    {
       name: 'company',
       label: 'Company',
       type: 'relationship',

@@ -196,6 +196,7 @@ export interface Company {
 export interface Investment {
   id: number;
   investor: number | User;
+  investorMapping: number | Investor;
   company: number | Company;
   transactionType: 'buy' | 'sell';
   investmentDate: string;
@@ -203,6 +204,19 @@ export interface Investment {
   pricePerShare: number;
   notes?: string | null;
   displayTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "investors".
+ */
+export interface Investor {
+  id: number;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  password: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -217,19 +231,6 @@ export interface InvestmentRecommendation {
   recommendationDate: string;
   buySellHoldRecommendation: 'buy' | 'sell' | 'hold';
   recommendationReasoning: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "investors".
- */
-export interface Investor {
-  id: number;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  password: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -376,6 +377,7 @@ export interface CompanySelect<T extends boolean = true> {
  */
 export interface InvestmentSelect<T extends boolean = true> {
   investor?: T;
+  investorMapping?: T;
   company?: T;
   transactionType?: T;
   investmentDate?: T;
