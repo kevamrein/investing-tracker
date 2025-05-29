@@ -64,7 +64,7 @@ export async function GET(request: Request) {
       const investments = await payload.find({
         collection: 'investment',
         where: {
-          investor: {
+          investorMapping: {
             equals: investor.id,
           },
         },
