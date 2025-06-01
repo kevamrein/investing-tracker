@@ -43,4 +43,5 @@ jobs:
         env:
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-          NODE_ENV: production 
+          NODE_ENV: production
+          PAYLOAD_CONFIG_PATH: src/payload.config.ts 
