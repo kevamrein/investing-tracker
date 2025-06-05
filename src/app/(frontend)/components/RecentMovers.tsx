@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 interface RecommendationChange {
   company: string
   ticker: string
@@ -33,9 +35,12 @@ export function RecentMovers({ changes }: RecentMoversProps) {
             <div key={`${change.ticker}-${change.date.toISOString()}`} className="flex items-start">
               <div className="ml-3 flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900">
+                  <Link
+                    href={`/stock/${change.ticker}`}
+                    className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                  >
                     {change.company} ({change.ticker})
-                  </p>
+                  </Link>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getRecommendationStyle(change.currentRec)}`}
                   >
