@@ -30,13 +30,15 @@ export interface InvestmentRecommendationResponse {
   recommendationReasoning: string
 }
 
+const modelName = 'grok-4-latest'
+
 export async function generateStockInformation(
   stockData: StockInformationRequest,
 ): Promise<StockInformationResponse> {
   const xAi = createXai({
     apiKey: process.env.X_AI_API_KEY,
   })
-  const model = xAi('grok-3-latest')
+  const model = xAi(modelName)
   const { object } = await generateObject({
     model: model,
     schema: z.object({
@@ -55,7 +57,7 @@ export async function generateInvestmentRecommendation(
   const xAi = createXai({
     apiKey: process.env.X_AI_API_KEY,
   })
-  const model = xAi('grok-3-latest')
+  const model = xAi(modelName)
   const { object } = await generateObject({
     model: model,
     schema: z.object({
@@ -79,7 +81,7 @@ export async function generateStockInformationWithLiveSearch(
         Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'grok-3-latest',
+        model: modelName,
         messages: [
           {
             role: 'system',
@@ -210,7 +212,7 @@ export async function generateInvestmentRecommendationWithLiveSearch(
         Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'grok-3-latest',
+        model: modelName,
         messages: [
           {
             role: 'system',
