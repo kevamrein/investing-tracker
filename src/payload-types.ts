@@ -195,6 +195,7 @@ export interface Company {
  */
 export interface Investment {
   id: number;
+  accountType: 'taxable' | 'ira';
   investor: number | User;
   investorMapping: number | Investor;
   company: number | Company;
@@ -376,6 +377,7 @@ export interface CompanySelect<T extends boolean = true> {
  * via the `definition` "investment_select".
  */
 export interface InvestmentSelect<T extends boolean = true> {
+  accountType?: T;
   investor?: T;
   investorMapping?: T;
   company?: T;

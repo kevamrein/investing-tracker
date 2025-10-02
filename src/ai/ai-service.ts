@@ -18,6 +18,7 @@ export interface PreviousInvestment {
   shares: number
   pricePerShare: number
   date: Date
+  accountType?: 'taxable' | 'ira' | string
 }
 
 export interface StockInformationResponse {
@@ -30,13 +31,15 @@ export interface InvestmentRecommendationResponse {
   recommendationReasoning: string
 }
 
+const modelName = 'grok-4-latest'
+
 export async function generateStockInformation(
   stockData: StockInformationRequest,
 ): Promise<StockInformationResponse> {
   const xAi = createXai({
     apiKey: process.env.X_AI_API_KEY,
   })
-  const model = xAi('grok-3-latest')
+  const model = xAi(modelName)
   const { object } = await generateObject({
     model: model,
     schema: z.object({
@@ -55,14 +58,14 @@ export async function generateInvestmentRecommendation(
   const xAi = createXai({
     apiKey: process.env.X_AI_API_KEY,
   })
-  const model = xAi('grok-3-latest')
+  const model = xAi(modelName)
   const { object } = await generateObject({
     model: model,
     schema: z.object({
       buySellHoldRecommendation: z.enum(['buy', 'sell', 'hold']),
       recommendationReasoning: z.string(),
     }),
-    prompt: `You are an expert financial analyst providing accurate, up-to-date insights for a personal stock trading app. For the ticker symbol ${stockData.ticker}, if the JSON list of investments provided below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), and total current value based on the latest market price; if the list is empty, base the recommendation on current market conditions and recent stock performance. Recommend a buy, sell, or hold action tailored for a slightly risk-tolerant investor using extra funds to beat the market, justifying the recommendation in 2 sentences max, ensuring the recommendation is actionable and aligns with the goal of outperforming the market. Ensure all information is verifiable and prioritize precision. Investments: ${JSON.stringify(stockData.investments)}`,
+    prompt: `You are an expert financial analyst providing accurate, up-to-date insights for a personal stock trading app. For the ticker symbol ${stockData.ticker}, if the JSON list of investments provided below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), and total current value based on the latest market price. Each investment includes an accountType field (either 'taxable' or 'ira'). If all investments are in the same account type, tailor your recommendation and reasoning for that account type (e.g., consider tax implications for taxable, ignore for IRA). If there are investments in multiple account types, provide a holistic overview and call out any differences in strategy or implications. If the list is empty, base the recommendation on current market conditions and recent stock performance. Recommend a buy, sell, or hold action tailored for a slightly risk-tolerant investor using extra funds to beat the market, justifying the recommendation in 2 sentences max, ensuring the recommendation is actionable and aligns with the goal of outperforming the market. Ensure all information is verifiable and prioritize precision. Investments: ${JSON.stringify(stockData.investments)}`,
   })
 
   return object as InvestmentRecommendationResponse
@@ -79,7 +82,7 @@ export async function generateStockInformationWithLiveSearch(
         Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'grok-3-latest',
+        model: modelName,
         messages: [
           {
             role: 'system',
@@ -210,7 +213,7 @@ export async function generateInvestmentRecommendationWithLiveSearch(
         Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'grok-3-latest',
+        model: modelName,
         messages: [
           {
             role: 'system',
@@ -219,7 +222,7 @@ export async function generateInvestmentRecommendationWithLiveSearch(
           },
           {
             role: 'user',
-            content: `For the ticker symbol ${stockData.ticker}, if the JSON list of investments below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), total current value using the latest market price, and estimate capital gains tax implications (short-term vs. long-term, assuming U.S. tax rates). Provide a buy, sell, or hold recommendation tailored for a slightly risk-tolerant investor aiming to beat the market with extra funds, prioritizing non-consensus insights, emerging trends, or underappreciated risks, and factoring in tax implications to maximize after-tax returns; justify it in 4 sentences max with verifiable, data-driven reasoning. If the investment list is empty, base the recommendation on current market conditions and recent stock performance, assuming a new position with no tax history. Investments: ${JSON.stringify(stockData.investments)}`,
+            content: `For the ticker symbol ${stockData.ticker}, if the JSON list of investments below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), total current value using the latest market price, and estimate capital gains tax implications (short-term vs. long-term, assuming U.S. tax rates). Each investment includes an accountType field (either 'taxable' or 'ira'). If all investments are in the same account type, tailor your recommendation and reasoning for that account type (e.g., consider tax implications for taxable, ignore for IRA). If there are investments in multiple account types, provide a holistic overview and call out any differences in strategy or implications. Provide a buy, sell, or hold recommendation tailored for a slightly risk-tolerant investor aiming to beat the market with extra funds, prioritizing non-consensus insights, emerging trends, or underappreciated risks, and factoring in tax implications to maximize after-tax returns; justify it in 4 sentences max with verifiable, data-driven reasoning. If the investment list is empty, base the recommendation on current market conditions and recent stock performance, assuming a new position with no tax history. Investments: ${JSON.stringify(stockData.investments)}`,
           },
         ],
         live_search: true,

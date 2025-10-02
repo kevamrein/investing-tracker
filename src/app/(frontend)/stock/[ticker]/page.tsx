@@ -88,6 +88,7 @@ export default async function StockPage({ params }: StockPageProps) {
     date: new Date(txn.investmentDate).toLocaleDateString(),
     amount: (txn.shares * txn.pricePerShare).toFixed(2),
     price: txn.pricePerShare.toFixed(2),
+    accountType: txn.accountType || 'taxable',
   }))
 
   const latestAnalysis = {
@@ -278,6 +279,9 @@ export default async function StockPage({ params }: StockPageProps) {
                     <span>
                       ${txn.amount} @ ${txn.price}/share
                     </span>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Account Type: <span className="font-medium capitalize">{txn.accountType}</span>
                   </div>
                 </div>
               ))}
