@@ -7,6 +7,17 @@ export const Investment: CollectionConfig = {
   },
   fields: [
     {
+      name: 'accountType',
+      label: 'Account Type',
+      type: 'select',
+      options: [
+        { label: 'Taxable', value: 'taxable' },
+        { label: 'IRA', value: 'ira' },
+      ],
+      required: true,
+      defaultValue: 'taxable',
+    },
+    {
       name: 'investor',
       label: 'Investor',
       type: 'relationship',
