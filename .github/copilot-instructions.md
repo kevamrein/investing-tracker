@@ -14,6 +14,7 @@ This project is a Next.js application integrated with Payload CMS, using TypeScr
 - Use Payload collections for data models. Define new collections in `src/collections`.
 - Use Next.js API routes for backend logic in `src/app/api`.
 - Use `src/app/actions` for server actions (e.g., authentication, registration, search).
+- Use pnpm for package management.
 
 ### Naming Conventions
 

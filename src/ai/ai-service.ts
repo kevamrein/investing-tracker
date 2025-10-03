@@ -31,7 +31,17 @@ export interface InvestmentRecommendationResponse {
   recommendationReasoning: string
 }
 
-const modelName = 'grok-4-latest'
+export interface AskStockQuestionRequest {
+  ticker: string
+  question: string
+  investorId: string
+}
+
+export interface AskStockQuestionResponse {
+  answer: string
+}
+
+const modelName = 'grok-4-fast-reasoning'
 
 export async function generateStockInformation(
   stockData: StockInformationRequest,
@@ -288,6 +298,128 @@ export async function generateInvestmentRecommendationWithLiveSearch(
     }
   } catch (error) {
     console.error('Error in generateInvestmentRecommendationWithLiveSearch:', error)
+    throw error
+  }
+}
+
+export async function askStockQuestion(
+  request: AskStockQuestionRequest,
+): Promise<AskStockQuestionResponse> {
+  const { ticker, question, investorId } = request
+
+  // Get user transaction history for this stock
+  const payload = await getPayload({ config })
+  const companyId = await payload
+    .find({
+      collection: 'company',
+      where: { ticker: { equals: ticker.toUpperCase() } },
+      limit: 1,
+    })
+    .then((res) => res.docs.map((doc) => doc.id))
+  const transactions = await payload.find({
+    collection: 'investment',
+    where: {
+      company: {
+        in: companyId,
+      },
+      investor: {
+        equals: investorId,
+      },
+    },
+    sort: '-investmentDate',
+    limit: 10, // Last 10 transactions
+  })
+
+  // Get most recent mover (latest recommendation change)
+  const recentRecommendations = await payload.find({
+    collection: 'investmentRecommendation',
+    sort: '-recommendationDate',
+    where: {
+      company: {
+        in: companyId,
+      },
+      investor: {
+        equals: investorId,
+      },
+    },
+    limit: 1,
+    depth: 1,
+  })
+
+  const recentMover = recentRecommendations.docs[0]
+
+  // Build context
+  const transactionContext = transactions.docs.map((txn) => ({
+    type: txn.transactionType,
+    shares: txn.shares,
+    price: txn.pricePerShare,
+    date: txn.investmentDate,
+    accountType: txn.accountType,
+  }))
+
+  const moverContext = recentMover
+    ? {
+        company: (recentMover.company as any)?.name || 'Unknown',
+        ticker: (recentMover.company as any)?.ticker || 'Unknown',
+        recommendation: recentMover.buySellHoldRecommendation,
+        reasoning: recentMover.recommendationReasoning,
+        date: recentMover.recommendationDate,
+      }
+    : null
+
+  try {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given context and your financial expertise. Keep the response under 300 words but do not return the word count.',
+          },
+          {
+            role: 'user',
+            content: `Context:
+- User's transaction history for ${ticker}: ${JSON.stringify(transactionContext)}
+- Most recent market mover: ${moverContext ? JSON.stringify(moverContext) : 'None available'}
+
+User's question: ${question}`,
+          },
+        ],
+        live_search: true,
+        search_parameters: {
+          mode: 'auto',
+          sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
+        },
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('XAI API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText,
+      })
+      throw new Error(`XAI API error: ${response.statusText}. Details: ${errorText}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from XAI API')
+    }
+
+    const answer = data.choices[0].message.content
+
+    return { answer }
+  } catch (error) {
+    console.error('Error in askStockQuestion:', error)
     throw error
   }
 }
