@@ -6,6 +6,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { Header } from '@/app/(frontend)/components/Header'
 import Link from 'next/link'
+import { AskQuestionModal } from '@/components/AskQuestionModal'
 
 interface StockPageProps {
   params: Promise<{
@@ -123,7 +124,10 @@ export default async function StockPage({ params }: StockPageProps) {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
+                <div className="flex items-center">
+                  <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
+                  <AskQuestionModal ticker={ticker} companyName={company.name} />
+                </div>
                 <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-600">
                   {ticker.toUpperCase()}
                 </span>
