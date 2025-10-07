@@ -322,7 +322,7 @@ export async function askStockQuestion(
       company: {
         in: companyId,
       },
-      investor: {
+      investorMapping: {
         equals: investorId,
       },
     },

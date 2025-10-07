@@ -196,7 +196,6 @@ export interface Company {
 export interface Investment {
   id: number;
   accountType: 'taxable' | 'ira';
-  investor: number | User;
   investorMapping: number | Investor;
   company: number | Company;
   transactionType: 'buy' | 'sell';
@@ -205,6 +204,7 @@ export interface Investment {
   pricePerShare: number;
   notes?: string | null;
   displayTitle?: string | null;
+  investor: number | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -378,7 +378,6 @@ export interface CompanySelect<T extends boolean = true> {
  */
 export interface InvestmentSelect<T extends boolean = true> {
   accountType?: T;
-  investor?: T;
   investorMapping?: T;
   company?: T;
   transactionType?: T;
@@ -387,6 +386,7 @@ export interface InvestmentSelect<T extends boolean = true> {
   pricePerShare?: T;
   notes?: T;
   displayTitle?: T;
+  investor?: T;
   updatedAt?: T;
   createdAt?: T;
 }

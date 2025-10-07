@@ -65,7 +65,7 @@ export default async function StockPage({ params }: StockPageProps) {
       company: {
         equals: company.id,
       },
-      investor: {
+      investorMapping: {
         equals: investorId,
       },
     },
