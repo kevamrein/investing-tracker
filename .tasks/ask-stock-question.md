@@ -13,3 +13,4 @@ Currently, I have stock recommendations, pros and cons, and other information ab
 - This is a payload CMS project with a frontend project built in. This work should only involve the frontend.
 - Ask if you have any questions or need clarity on a requirement.
 - Mark each requirement with (STARTED) when you start it and (COMPLETE) when you complete it.
+- For UI only use shadcn or tailwind. The UI should fit with the other aspects of the site.

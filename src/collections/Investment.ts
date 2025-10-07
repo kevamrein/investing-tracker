@@ -18,13 +18,6 @@ export const Investment: CollectionConfig = {
       defaultValue: 'taxable',
     },
     {
-      name: 'investor',
-      label: 'Investor',
-      type: 'relationship',
-      relationTo: 'users',
-      required: true,
-    },
-    {
       name: 'investorMapping',
       label: 'Investor',
       type: 'relationship',
@@ -91,6 +84,15 @@ export const Investment: CollectionConfig = {
           },
         ],
       },
+    },
+    /* Deprecated */
+    {
+      name: 'investor',
+      label: 'Investor',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+      hidden: true,
     },
   ],
 }
