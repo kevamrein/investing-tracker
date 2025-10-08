@@ -2,6 +2,7 @@ import { createXai } from '@ai-sdk/xai'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 import { getPayload } from 'payload'
+import { sql } from 'drizzle-orm'
 import config from '@payload-config'
 
 export interface StockInformationRequest {
@@ -38,6 +39,15 @@ export interface AskStockQuestionRequest {
 }
 
 export interface AskStockQuestionResponse {
+  answer: string
+}
+
+export interface AskPortfolioQuestionRequest {
+  question: string
+  investorId: string
+}
+
+export interface AskPortfolioQuestionResponse {
   answer: string
 }
 
@@ -420,6 +430,151 @@ User's question: ${question}`,
     return { answer }
   } catch (error) {
     console.error('Error in askStockQuestion:', error)
+    throw error
+  }
+}
+
+export async function askPortfolioQuestion(
+  request: AskPortfolioQuestionRequest,
+): Promise<AskPortfolioQuestionResponse> {
+  const { question, investorId } = request
+
+  const payload = await getPayload({ config })
+
+  // Get net shares per company and account type using SQL
+  const netSharesResult = await payload.db.drizzle.execute(sql`
+    SELECT company_id as company, account_type, SUM(CASE WHEN transaction_type = 'buy' THEN shares ELSE -shares END) as net_shares
+    FROM investment
+    WHERE investor_mapping_id = ${investorId}
+    GROUP BY company_id, account_type
+    HAVING SUM(CASE WHEN transaction_type = 'buy' THEN shares ELSE -shares END) > 0
+  `)
+
+  // Calculate FIFO cost basis for each company and account type with holdings
+  const activeHoldings = []
+
+  for (const row of netSharesResult.rows as any[]) {
+    const companyId = row.company as string
+    const accountType = row.account_type as string
+    const netShares = row.net_shares as number
+
+    // Fetch investments for this company and account type, sorted by date
+    const investments = await payload.find({
+      collection: 'investment',
+      where: {
+        company: {
+          equals: companyId,
+        },
+        investorMapping: {
+          equals: investorId,
+        },
+        accountType: {
+          equals: accountType,
+        },
+      },
+      sort: 'investmentDate',
+    })
+
+    // FIFO calculation for cost basis
+    const buyQueue: { shares: number; price: number }[] = []
+
+    for (const inv of investments.docs) {
+      if (inv.transactionType === 'buy') {
+        buyQueue.push({ shares: inv.shares, price: inv.pricePerShare })
+      } else if (inv.transactionType === 'sell') {
+        let remainingSell = inv.shares
+        while (remainingSell > 0 && buyQueue.length > 0) {
+          const lot = buyQueue[0]
+          if (lot.shares <= remainingSell) {
+            remainingSell -= lot.shares
+            buyQueue.shift()
+          } else {
+            lot.shares -= remainingSell
+            remainingSell = 0
+          }
+        }
+      }
+    }
+
+    // Cost basis from remaining lots
+    const costBasis = buyQueue.reduce((sum, lot) => sum + lot.shares * lot.price, 0)
+
+    // Get company details
+    const company = await payload.findByID({
+      collection: 'company',
+      id: companyId,
+    })
+
+    if (company) {
+      activeHoldings.push({
+        companyName: company.name,
+        ticker: company.ticker,
+        accountType: accountType,
+        shares: netShares,
+        costBasis: costBasis,
+      })
+    }
+  }
+
+  // Build context
+  const portfolioContext = activeHoldings
+    .map(
+      (h) =>
+        `${h.companyName} (${h.ticker}): ${h.shares} shares in ${h.accountType} account, FIFO cost basis $${h.costBasis.toFixed(2)}`,
+    )
+    .join('; ')
+
+  try {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Keep the response under 300 words but do not return the word count.',
+          },
+          {
+            role: 'user',
+            content: `Portfolio holdings: ${portfolioContext}
+
+User's question: ${question}`,
+          },
+        ],
+        live_search: true,
+        search_parameters: {
+          mode: 'auto',
+          sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
+        },
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('XAI API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText,
+      })
+      throw new Error(`XAI API error: ${response.statusText}. Details: ${errorText}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from XAI API')
+    }
+
+    const answer = data.choices[0].message.content
+
+    return { answer }
+  } catch (error) {
+    console.error('Error in askPortfolioQuestion:', error)
     throw error
   }
 }

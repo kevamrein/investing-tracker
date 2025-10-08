@@ -1,6 +1,7 @@
 import { Header } from './components/Header'
 import { RecentMoversWrapper } from './components/RecentMoversWrapper'
 import { CompanySidebarWrapper } from './components/CompanySidebarWrapper'
+import { AskPortfolioQuestionModal } from '@/components/AskPortfolioQuestionModal'
 
 export default function HomePage() {
   return (
@@ -13,6 +14,9 @@ export default function HomePage() {
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">Investment Tracker</h1>
               <p className="text-lg text-gray-600">Check out the recent market movers</p>
+            </div>
+            <div className="flex justify-center mb-8">
+              <AskPortfolioQuestionModal />
             </div>
 
             <div className="max-w-2xl mx-auto">
