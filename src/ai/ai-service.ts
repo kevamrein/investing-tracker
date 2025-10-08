@@ -2,7 +2,7 @@ import { createXai } from '@ai-sdk/xai'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 import { getPayload } from 'payload'
-import { sql } from 'drizzle-orm'
+import { sql } from '@payloadcms/db-postgres/drizzle'
 import config from '@payload-config'
 
 export interface StockInformationRequest {
