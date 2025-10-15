@@ -58,9 +58,13 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
-          <Lightbulb className="w-4 h-4 mr-1" />
-          Ask Question
+        <Button
+          variant="default"
+          size="lg"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Lightbulb className="w-5 h-5 mr-2" />
+          Ask Company Assistant
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
