@@ -127,7 +127,7 @@ export default async function StockPage({ params }: StockPageProps) {
             </div>
           </div>
           <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
-            {company.description || 'Investment opportunity analysis and insights'}
+            {'Investment opportunity analysis and insights'}
           </p>
         </div>
 
