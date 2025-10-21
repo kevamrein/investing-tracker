@@ -465,30 +465,6 @@ export async function askPortfolioQuestion(
 
   const fullContext = `${portfolioContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
 
-  console.log(
-    JSON.stringify({
-      model: reasoningModel,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Use live search to get current stock prices and any other market data you need. Keep the response under 300 words but do not return the word count.',
-        },
-        {
-          role: 'user',
-          content: `Portfolio holdings: ${fullContext}
-
-User's question: ${question}`,
-        },
-      ],
-      live_search: true,
-      search_parameters: {
-        mode: 'auto',
-        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
-      },
-    }),
-  )
-
   try {
     const body = JSON.stringify({
       model: reasoningModel,
