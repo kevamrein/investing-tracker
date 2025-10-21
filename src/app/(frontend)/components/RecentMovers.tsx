@@ -17,27 +17,45 @@ interface RecentMoversProps {
 function getRecommendationStyle(rec: 'buy' | 'sell' | 'hold') {
   switch (rec) {
     case 'buy':
-      return 'bg-green-100 text-green-800'
+      return 'bg-accent text-accent-foreground'
     case 'sell':
-      return 'bg-red-100 text-red-800'
+      return 'bg-destructive text-destructive-foreground'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-muted text-muted-foreground'
   }
 }
 
 export function RecentMovers({ changes }: RecentMoversProps) {
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-5 sm:p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Market Movers</h2>
+    <div className="bg-card shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border border-border/50 overflow-hidden">
+      <div className="px-6 py-5 sm:p-6">
+        <h2 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+          <svg
+            className="w-5 h-5 text-primary"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+            />
+          </svg>
+          Recent Market Movers
+        </h2>
         <div className="space-y-4">
           {changes.map((change) => (
-            <div key={`${change.ticker}-${change.date.toISOString()}`} className="flex items-start">
+            <div
+              key={`${change.ticker}-${change.date.toISOString()}`}
+              className="flex items-start p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-border/30"
+            >
               <div className="ml-3 flex-1">
                 <div className="flex items-center justify-between">
                   <Link
                     href={`/stock/${change.ticker}`}
-                    className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                    className="text-sm font-medium text-card-foreground hover:text-primary transition-colors"
                   >
                     {change.company} ({change.ticker})
                   </Link>
@@ -47,8 +65,7 @@ export function RecentMovers({ changes }: RecentMoversProps) {
                     {change.currentRec.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">{change.reasoning}</p>
-                <p className="text-xs text-gray-400 mt-1">{change.date.toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground mt-1">{change.reasoning}</p>
               </div>
             </div>
           ))}

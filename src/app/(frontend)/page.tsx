@@ -5,21 +5,149 @@ import { AskPortfolioQuestionModal } from '@/components/AskPortfolioQuestionModa
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
       <Header />
       <div className="flex">
         <CompanySidebarWrapper />
-        <main className="flex-1 py-10">
-          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">Investment Tracker</h1>
-              <p className="text-lg text-gray-600">Check out the recent market movers</p>
-            </div>
-            <div className="flex justify-center mb-8">
-              <AskPortfolioQuestionModal />
+        <main className="flex-1 py-12 px-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Hero Section */}
+            <div className="text-center mb-12">
+              <div className="mb-6">
+                <svg
+                  className="w-16 h-16 text-primary mx-auto mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-5xl font-extrabold text-foreground mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                Investment Tracker
+              </h1>
+              <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
+                Stay ahead of the market with real-time insights, personalized recommendations, and
+                comprehensive portfolio tracking
+              </p>
             </div>
 
-            <div className="max-w-2xl mx-auto">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <div className="bg-card/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mr-3">
+                    <svg
+                      className="w-5 h-5 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-card-foreground">Market Overview</h3>
+                </div>
+                <p className="text-muted-foreground font-light">
+                  Track market trends and get instant updates on stock performance
+                </p>
+              </div>
+
+              <div className="bg-card/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center mr-3">
+                    <svg
+                      className="w-5 h-5 text-accent"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-card-foreground">
+                    Portfolio Analytics
+                  </h3>
+                </div>
+                <p className="text-muted-foreground font-light">
+                  Analyze your investments with detailed performance metrics
+                </p>
+              </div>
+
+              <div className="bg-card/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-secondary/20 rounded-xl flex items-center justify-center mr-3">
+                    <svg
+                      className="w-5 h-5 text-secondary-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-card-foreground">AI Insights</h3>
+                </div>
+                <p className="text-muted-foreground font-light">
+                  Get AI-powered recommendations and market predictions
+                </p>
+              </div>
+            </div>
+
+            {/* AI Portfolio Assistant Feature */}
+            <div className="max-w-2xl mx-auto mb-12">
+              <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-8 border border-primary/10 shadow-lg">
+                <div className="text-center">
+                  <div className="mb-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                      <svg
+                        className="w-6 h-6 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
+                    AI Portfolio Assistant
+                  </h2>
+                  <p className="text-muted-foreground font-medium mb-6 max-w-md mx-auto">
+                    Get personalized insights about your portfolio performance, market trends, and
+                    investment strategies
+                  </p>
+                  <AskPortfolioQuestionModal />
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto">
               <RecentMoversWrapper />
             </div>
           </div>

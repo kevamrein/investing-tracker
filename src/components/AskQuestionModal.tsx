@@ -58,23 +58,31 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
-          <Lightbulb className="w-4 h-4 mr-1" />
-          Ask Question
+        <Button
+          variant="default"
+          size="lg"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Lightbulb className="w-5 h-5 mr-2" />
+          Ask Company Assistant
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[700px] bg-card/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-border/50">
         <DialogHeader>
-          <DialogTitle>
-            Ask about {companyName} ({ticker})
+          <DialogTitle className="text-2xl font-extrabold text-card-foreground flex items-center">
+            <Lightbulb className="w-6 h-6 mr-3 text-primary" />
+            Ask Company Assistant
           </DialogTitle>
-          <DialogDescription>
-            Ask any question about this stock and get AI-powered insights.
+          <DialogDescription className="text-muted-foreground font-medium">
+            Ask any question about {companyName} ({ticker}) and get AI-powered insights.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <label htmlFor="question" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="question"
+              className="block text-sm font-semibold text-card-foreground mb-3"
+            >
               Your Question
             </label>
             <textarea
@@ -82,22 +90,53 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="e.g., What are the main risks for this investment?"
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-input rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-background/50 placeholder:text-muted-foreground resize-none"
               rows={3}
             />
           </div>
           <Button
             onClick={handleSubmit}
             disabled={!question.trim() || isLoading}
-            className="w-full"
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-primary-foreground transition-all ${
+              isLoading || !question.trim()
+                ? 'bg-primary/70 cursor-not-allowed'
+                : 'bg-primary hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
           >
-            {isLoading ? 'Getting Answer...' : 'Ask Question'}
+            {isLoading ? (
+              <div className="flex items-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Getting Answer...
+              </div>
+            ) : (
+              'Ask Question'
+            )}
           </Button>
           {answer && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Answer</label>
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-md max-h-64 overflow-y-auto">
-                <div className="text-sm text-gray-700 prose prose-sm max-w-none">
+            <div className="mt-6">
+              <label className="block text-sm font-semibold text-card-foreground mb-3">
+                Assistant Response
+              </label>
+              <div className="p-6 bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm max-h-96 overflow-y-auto">
+                <div className="text-base text-card-foreground prose prose-base max-w-none prose-headings:text-card-foreground prose-p:text-card-foreground prose-strong:text-card-foreground prose-code:text-card-foreground prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-p:leading-relaxed">
                   <ReactMarkdown>{answer}</ReactMarkdown>
                 </div>
               </div>
