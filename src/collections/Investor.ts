@@ -29,5 +29,10 @@ export const Investor: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'investableAssets',
+      label: 'Investable Assets',
+      type: 'number',
+    },
   ],
 }

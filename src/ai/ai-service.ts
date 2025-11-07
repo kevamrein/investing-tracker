@@ -387,6 +387,12 @@ export async function askPortfolioQuestion(
 
   const payload = await getPayload({ config })
 
+  // Get the investor's investable assets
+  const investor = await payload.findByID({
+    collection: 'investors',
+    id: investorId,
+  })
+
   // Get net shares per company and account type using SQL
   const netSharesResult = await payload.db.drizzle.execute(sql`
     SELECT company_id as company, account_type, SUM(CASE WHEN transaction_type = 'buy' THEN shares ELSE -shares END) as net_shares
@@ -396,16 +402,22 @@ export async function askPortfolioQuestion(
     HAVING SUM(CASE WHEN transaction_type = 'buy' THEN shares ELSE -shares END) > 0
   `)
 
-  // Calculate FIFO cost basis for each company and account type with holdings
-  const activeHoldings = []
+  // Build holdings context
+  const holdings = []
 
   for (const row of netSharesResult.rows as any[]) {
     const companyId = row.company as string
     const accountType = row.account_type as string
     const netShares = row.net_shares as number
 
-    // Fetch investments for this company and account type, sorted by date
-    const investments = await payload.find({
+    // Get company details
+    const company = await payload.findByID({
+      collection: 'company',
+      id: companyId,
+    })
+
+    // Get transactions for cost basis calculation
+    const transactions = await payload.find({
       collection: 'investment',
       where: {
         company: {
@@ -421,54 +433,37 @@ export async function askPortfolioQuestion(
       sort: 'investmentDate',
     })
 
-    // FIFO calculation for cost basis
-    const buyQueue: { shares: number; price: number }[] = []
-
-    for (const inv of investments.docs) {
-      if (inv.transactionType === 'buy') {
-        buyQueue.push({ shares: inv.shares, price: inv.pricePerShare })
-      } else if (inv.transactionType === 'sell') {
-        let remainingSell = inv.shares
-        while (remainingSell > 0 && buyQueue.length > 0) {
-          const lot = buyQueue[0]
-          if (lot.shares <= remainingSell) {
-            remainingSell -= lot.shares
-            buyQueue.shift()
-          } else {
-            lot.shares -= remainingSell
-            remainingSell = 0
-          }
-        }
-      }
-    }
-
-    // Cost basis from remaining lots
-    const costBasis = buyQueue.reduce((sum, lot) => sum + lot.shares * lot.price, 0)
-
-    // Get company details
-    const company = await payload.findByID({
-      collection: 'company',
-      id: companyId,
-    })
+    const transactionSummary = transactions.docs.map((txn) => ({
+      type: txn.transactionType,
+      shares: txn.shares,
+      price: txn.pricePerShare,
+      date: txn.investmentDate,
+    }))
 
     if (company) {
-      activeHoldings.push({
+      holdings.push({
         companyName: company.name,
         ticker: company.ticker,
         accountType: accountType,
         shares: netShares,
-        costBasis: costBasis,
+        transactions: transactionSummary,
       })
     }
   }
 
+  // Calculate total investable assets (AI will calculate remaining after determining cost basis)
+  const totalInvestableAssets =
+    investor && typeof investor.investableAssets === 'number' ? investor.investableAssets : 0
+
   // Build context
-  const portfolioContext = activeHoldings
+  const portfolioContext = holdings
     .map(
       (h) =>
-        `${h.companyName} (${h.ticker}): ${h.shares} shares in ${h.accountType} account, FIFO cost basis $${h.costBasis.toFixed(2)}`,
+        `${h.companyName} (${h.ticker}): ${h.shares} shares in ${h.accountType} account. Transactions: ${JSON.stringify(h.transactions)}`,
     )
     .join('; ')
+
+  const fullContext = `${portfolioContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
 
   try {
     const body = JSON.stringify({
@@ -477,11 +472,11 @@ export async function askPortfolioQuestion(
         {
           role: 'system',
           content:
-            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Keep the response under 300 words but do not return the word count.',
+            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Use live search to get current stock prices and any other market data you need. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. When considering investment opportunities, remember that the investor can sell existing shares to raise additional cash beyond their current investable assets, and factor in tax implications of selling based on cost basis and holding periods. Keep the response under 300 words but do not return the word count.',
         },
         {
           role: 'user',
-          content: `Portfolio holdings: ${portfolioContext}
+          content: `Portfolio holdings: ${fullContext}
 
 User's question: ${question}`,
         },

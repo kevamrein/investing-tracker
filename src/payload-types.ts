@@ -218,6 +218,7 @@ export interface Investor {
   firstName?: string | null;
   lastName?: string | null;
   password: string;
+  investableAssets?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -412,6 +413,7 @@ export interface InvestorsSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
   password?: T;
+  investableAssets?: T;
   updatedAt?: T;
   createdAt?: T;
 }

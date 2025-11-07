@@ -67,6 +67,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             firstName: user.firstName || '',
             lastName: user.lastName || '',
+            investableAssets: user.investableAssets || 0,
             accessToken: String(user.id),
           }
         } catch (error) {
@@ -84,6 +85,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email
         token.firstName = user.firstName
         token.lastName = user.lastName
+        token.investableAssets = user.investableAssets
         token.accessToken = user.accessToken
       }
       return token
@@ -95,6 +97,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string
         session.user.firstName = token.firstName as string
         session.user.lastName = token.lastName as string
+        session.user.investableAssets = token.investableAssets as number
         session.accessToken = token.accessToken as string
       }
       return session
@@ -119,6 +122,7 @@ declare module 'next-auth' {
       email: string
       firstName: string
       lastName: string
+      investableAssets: number
     }
     accessToken: string
   }
@@ -128,6 +132,7 @@ declare module 'next-auth' {
     email: string
     firstName: string
     lastName: string
+    investableAssets: number
     accessToken: string
   }
 }
@@ -138,6 +143,7 @@ declare module 'next-auth/jwt' {
     email: string
     firstName: string
     lastName: string
+    investableAssets: number
     accessToken: string
   }
 }
