@@ -49,6 +49,15 @@ export interface AskPortfolioQuestionResponse {
   answer: string
 }
 
+export interface AskSystemQuestionRequest {
+  question: string
+  investorId: string
+}
+
+export interface AskSystemQuestionResponse {
+  answer: string
+}
+
 const reasoningModel = 'grok-4-fast-reasoning'
 const nonReasoningModel = 'grok-4-fast'
 
@@ -511,6 +520,95 @@ User's question: ${question}`,
     return { answer }
   } catch (error) {
     console.error('Error in askPortfolioQuestion:', error)
+    throw error
+  }
+}
+
+export async function askSystemQuestion(
+  request: AskSystemQuestionRequest,
+): Promise<AskSystemQuestionResponse> {
+  const { question, investorId } = request
+
+  const payload = await getPayload({ config })
+
+  // Get all companies with their tickers
+  const companies = await payload.find({
+    collection: 'company',
+    sort: 'name',
+  })
+
+  // Get all user's transactions
+  const transactions = await payload.find({
+    collection: 'investment',
+    where: {
+      investorMapping: {
+        equals: investorId,
+      },
+    },
+    sort: '-investmentDate',
+    depth: 1, // Include company relationship data
+  })
+
+  // Build context
+  const companiesContext = companies.docs
+    .map((company) => `${company.name} (${company.ticker})`)
+    .join('; ')
+
+  const transactionsContext = transactions.docs
+    .map((txn) => {
+      const company = txn.company as any
+      return `${company?.name || 'Unknown'} (${company?.ticker || 'Unknown'}): ${txn.transactionType} ${txn.shares} shares at $${txn.pricePerShare} on ${txn.investmentDate} (${txn.accountType})`
+    })
+    .join('; ')
+
+  const fullContext = `All companies in system: ${companiesContext}; User's transaction history: ${transactionsContext}`
+
+  try {
+    const body = JSON.stringify({
+      model: reasoningModel,
+      messages: [
+        {
+          role: 'system',
+          content:
+            "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
+        },
+        {
+          role: 'user',
+          content: `System context: ${fullContext}
+
+User's question: ${question}`,
+        },
+      ],
+      live_search: true,
+      search_parameters: {
+        mode: 'auto',
+        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
+      },
+    })
+
+    const response = await xAIRequest(body)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('XAI API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText,
+      })
+      throw new Error(`XAI API error: ${response.statusText}. Details: ${errorText}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from XAI API')
+    }
+
+    const answer = data.choices[0].message.content
+
+    return { answer }
+  } catch (error) {
+    console.error('Error in askSystemQuestion:', error)
     throw error
   }
 }

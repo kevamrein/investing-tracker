@@ -2,6 +2,7 @@ import { Header } from './components/Header'
 import { RecentMoversWrapper } from './components/RecentMoversWrapper'
 import { CompanySidebarWrapper } from './components/CompanySidebarWrapper'
 import { AskPortfolioQuestionModal } from '@/components/AskPortfolioQuestionModal'
+import { AskSystemQuestionModal } from '@/components/AskSystemQuestionModal'
 
 export default function HomePage() {
   return (
@@ -142,7 +143,10 @@ export default function HomePage() {
                     Get personalized insights about your portfolio performance, market trends, and
                     investment strategies
                   </p>
-                  <AskPortfolioQuestionModal />
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <AskPortfolioQuestionModal />
+                    <AskSystemQuestionModal />
+                  </div>
                 </div>
               </div>
             </div>
