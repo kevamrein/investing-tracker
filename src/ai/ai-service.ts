@@ -549,6 +549,15 @@ export async function askSystemQuestion(
     depth: 1, // Include company relationship data
   })
 
+  // Get investor for investable assets
+  const investor = await payload.findByID({
+    collection: 'investors',
+    id: investorId,
+  })
+
+  const totalInvestableAssets =
+    investor && typeof investor.investableAssets === 'number' ? investor.investableAssets : 0
+
   // Build context
   const companiesContext = companies.docs
     .map((company) => `${company.name} (${company.ticker})`)
@@ -561,7 +570,7 @@ export async function askSystemQuestion(
     })
     .join('; ')
 
-  const fullContext = `All companies in system: ${companiesContext}; User's transaction history: ${transactionsContext}`
+  const fullContext = `All companies in system: ${companiesContext}; User's transaction history: ${transactionsContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
 
   try {
     const body = JSON.stringify({
@@ -570,7 +579,7 @@ export async function askSystemQuestion(
         {
           role: 'system',
           content:
-            "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
+            "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
         },
         {
           role: 'user',
