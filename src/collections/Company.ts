@@ -94,5 +94,10 @@ export const Company: CollectionConfig = {
       label: 'One Year Return',
       type: 'number',
     },
+    {
+      name: 'notes',
+      label: 'Notes',
+      type: 'text',
+    },
   ],
 }

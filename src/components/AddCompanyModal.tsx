@@ -25,6 +25,7 @@ export function AddCompanyModal({ isOpen, onClose, onCompanyAdded }: AddCompanyM
     recommendationDate: '',
     priceTarget: '',
     timeframe: '',
+    notes: '',
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -45,6 +46,7 @@ export function AddCompanyModal({ isOpen, onClose, onCompanyAdded }: AddCompanyM
     formDataObj.append('recommendationDate', formData.recommendationDate)
     if (formData.priceTarget) formDataObj.append('priceTarget', formData.priceTarget)
     if (formData.timeframe) formDataObj.append('timeframe', formData.timeframe.trim())
+    if (formData.notes) formDataObj.append('notes', formData.notes.trim())
 
     try {
       const result = await createCompany(formDataObj)
@@ -56,6 +58,7 @@ export function AddCompanyModal({ isOpen, onClose, onCompanyAdded }: AddCompanyM
           recommendationDate: '',
           priceTarget: '',
           timeframe: '',
+          notes: '',
         })
         onCompanyAdded()
         onClose()
@@ -166,6 +169,22 @@ export function AddCompanyModal({ isOpen, onClose, onCompanyAdded }: AddCompanyM
               onChange={(e) => handleInputChange('timeframe', e.target.value)}
               className="w-full px-3 py-2 border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-background/50"
               placeholder="e.g., 12-24 months"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="notes"
+              className="block text-sm font-semibold text-card-foreground mb-2"
+            >
+              Notes
+            </label>
+            <textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              className="w-full px-3 py-2 border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-background/50"
+              placeholder="Optional notes about this transaction"
+              rows={3}
             />
           </div>
           {error && (

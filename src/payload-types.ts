@@ -195,6 +195,7 @@ export interface Company {
   ytdReturn?: number | null;
   weekToDateReturn?: number | null;
   oneYearReturn?: number | null;
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -403,6 +404,7 @@ export interface CompanySelect<T extends boolean = true> {
   ytdReturn?: T;
   weekToDateReturn?: T;
   oneYearReturn?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

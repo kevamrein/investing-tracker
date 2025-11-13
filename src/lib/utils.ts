@@ -8,3 +8,12 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US')
 }
+
+export function linkify(text: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  return text.replace(
+    urlRegex,
+    (url) =>
+      `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">${url}</a>`,
+  )
+}

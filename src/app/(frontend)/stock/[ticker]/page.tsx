@@ -8,6 +8,7 @@ import { Header } from '@/app/(frontend)/components/Header'
 import Link from 'next/link'
 import { AskQuestionModal } from '@/components/AskQuestionModal'
 import { TransactionHistorySection } from '@/components/TransactionHistorySection'
+import { linkify } from '@/lib/utils'
 
 interface StockPageProps {
   params: Promise<{
@@ -212,6 +213,17 @@ export default async function StockPage({ params }: StockPageProps) {
 
         {/* Investment Insights Card */}
         <div className="bg-card/60 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-border/50 mb-8">
+          {/* Notes */}
+          {company.notes && (
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-card-foreground mb-4">Notes</h3>
+              <div
+                className="text-card-foreground p-6 bg-secondary/50 rounded-xl border border-border/30 font-medium leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: linkify(company.notes) }}
+              />
+            </div>
+          )}
+
           {/* Latest Analysis */}
           <div className="mb-8">
             <h3 className="text-xl font-semibold text-card-foreground mb-4">Latest Analysis</h3>

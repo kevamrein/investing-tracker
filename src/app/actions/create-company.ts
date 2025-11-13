@@ -9,6 +9,7 @@ export async function createCompany(formData: FormData) {
   const recommendationDate = formData.get('recommendationDate') as string
   const priceTarget = formData.get('priceTarget') as string
   const timeframe = formData.get('timeframe') as string
+  const notes = formData.get('notes') as string
 
   // Basic validation
   if (!name || !ticker || !recommendationDate) {
@@ -27,6 +28,7 @@ export async function createCompany(formData: FormData) {
         recommendationDate,
         ...(priceTarget && { priceTarget: parseFloat(priceTarget) }),
         ...(timeframe && { timeframe: timeframe.trim() }),
+        ...(notes && { notes: notes.trim() }),
       },
     })
 
