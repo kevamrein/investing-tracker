@@ -11,12 +11,14 @@ export const Company: CollectionConfig = {
       label: 'Name',
       type: 'text',
       required: true,
+      unique: true,
     },
     {
       name: 'ticker',
       label: 'Ticker',
       type: 'text',
       required: true,
+      unique: true,
     },
     {
       name: 'recommendationDate',
@@ -91,6 +93,11 @@ export const Company: CollectionConfig = {
       name: 'oneYearReturn',
       label: 'One Year Return',
       type: 'number',
+    },
+    {
+      name: 'notes',
+      label: 'Notes',
+      type: 'text',
     },
   ],
 }

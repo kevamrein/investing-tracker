@@ -7,6 +7,8 @@ import { authOptions } from '@/lib/auth'
 import { Header } from '@/app/(frontend)/components/Header'
 import Link from 'next/link'
 import { AskQuestionModal } from '@/components/AskQuestionModal'
+import { TransactionHistorySection } from '@/components/TransactionHistorySection'
+import { linkify } from '@/lib/utils'
 
 interface StockPageProps {
   params: Promise<{
@@ -211,6 +213,17 @@ export default async function StockPage({ params }: StockPageProps) {
 
         {/* Investment Insights Card */}
         <div className="bg-card/60 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-border/50 mb-8">
+          {/* Notes */}
+          {company.notes && (
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-card-foreground mb-4">Notes</h3>
+              <div
+                className="text-card-foreground p-6 bg-secondary/50 rounded-xl border border-border/30 font-medium leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: linkify(company.notes) }}
+              />
+            </div>
+          )}
+
           {/* Latest Analysis */}
           <div className="mb-8">
             <h3 className="text-xl font-semibold text-card-foreground mb-4">Latest Analysis</h3>
@@ -324,39 +337,10 @@ export default async function StockPage({ params }: StockPageProps) {
         </div>
 
         {/* Transaction History Card */}
-        <div className="bg-card/60 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-border/50">
-          <h2 className="text-xl font-bold mb-6 text-card-foreground">Transaction History</h2>
-          <div className="space-y-4">
-            {transactionHistory.map((txn, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-xl bg-muted/50 border border-border/30 hover:bg-muted/70 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-muted-foreground">{txn.date}</span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      txn.type === 'buy'
-                        ? 'bg-accent text-accent-foreground'
-                        : 'bg-destructive text-destructive-foreground'
-                    }`}
-                  >
-                    {txn.type.toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                  <span className="font-medium">{txn.shares} shares</span>
-                  <span className="font-medium">
-                    ${txn.amount} @ ${txn.price}/share
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Account Type: <span className="font-semibold capitalize">{txn.accountType}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TransactionHistorySection
+          transactionHistory={transactionHistory}
+          companyId={company.id.toString()}
+        />
       </div>
     </div>
   )
