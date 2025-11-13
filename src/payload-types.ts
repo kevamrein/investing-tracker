@@ -213,7 +213,7 @@ export interface Investment {
   pricePerShare: number;
   notes?: string | null;
   displayTitle?: string | null;
-  investor: number | User;
+  investor?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
