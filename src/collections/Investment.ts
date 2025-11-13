@@ -91,7 +91,6 @@ export const Investment: CollectionConfig = {
       label: 'Investor',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
       hidden: true,
     },
   ],
