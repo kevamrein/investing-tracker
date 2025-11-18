@@ -78,11 +78,34 @@ export async function generateStockInformationWithLiveSearch(
           content: `For the company with ticker symbol ${stockData.ticker}, provide a concise bull case (3 sentences max) and bear case (3 sentences max) based on unique, recent, and verifiable information that highlights non-consensus opportunities or risks. Prioritize early signals, such as emerging trends, underreported metrics, or shifts in competitive dynamics, that could lead to outsized returns or significant losses. Avoid mainstream narratives and focus on precise, data-driven insights from reliable sources.`,
         },
       ],
-      live_search: true,
-      search_parameters: {
-        mode: 'auto',
-        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
-      },
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'web_search',
+            description: 'Search the web for current information',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query',
+                },
+                sources: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    enum: ['web', 'x', 'news'],
+                  },
+                  description: 'Sources to search from',
+                },
+              },
+              required: ['query'],
+            },
+          },
+        },
+      ],
+      tool_choice: 'auto',
       response_format: {
         type: 'json_object',
         schema: {
@@ -204,11 +227,34 @@ export async function generateInvestmentRecommendationWithLiveSearch(
           content: `For the ticker symbol ${stockData.ticker}, if the JSON list of investments below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), total current value using the latest market price, and estimate capital gains tax implications (short-term vs. long-term, assuming U.S. tax rates). Each investment includes an accountType field (either 'taxable' or 'ira'). If all investments are in the same account type, tailor your recommendation and reasoning for that account type (e.g., consider tax implications for taxable, ignore for IRA). If there are investments in multiple account types, provide a holistic overview and call out any differences in strategy or implications. Provide a buy, sell, or hold recommendation tailored for a slightly risk-tolerant investor aiming to beat the market with extra funds, prioritizing non-consensus insights, emerging trends, or underappreciated risks, and factoring in tax implications to maximize after-tax returns; justify it in 4 sentences max with verifiable, data-driven reasoning. If the investment list is empty, base the recommendation on current market conditions and recent stock performance, assuming a new position with no tax history. Investments: ${JSON.stringify(stockData.investments)}`,
         },
       ],
-      live_search: true,
-      search_parameters: {
-        mode: 'auto',
-        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
-      },
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'web_search',
+            description: 'Search the web for current information',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query',
+                },
+                sources: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    enum: ['web', 'x', 'news'],
+                  },
+                  description: 'Sources to search from',
+                },
+              },
+              required: ['query'],
+            },
+          },
+        },
+      ],
+      tool_choice: 'auto',
       response_format: {
         type: 'json_object',
         schema: {
@@ -355,11 +401,34 @@ export async function askStockQuestion(
 User's question: ${question}`,
         },
       ],
-      live_search: true,
-      search_parameters: {
-        mode: 'auto',
-        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
-      },
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'web_search',
+            description: 'Search the web for current information',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query',
+                },
+                sources: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    enum: ['web', 'x', 'news'],
+                  },
+                  description: 'Sources to search from',
+                },
+              },
+              required: ['query'],
+            },
+          },
+        },
+      ],
+      tool_choice: 'auto',
     })
 
     const response = await xAIRequest(body)
@@ -490,11 +559,34 @@ export async function askPortfolioQuestion(
 User's question: ${question}`,
         },
       ],
-      live_search: true,
-      search_parameters: {
-        mode: 'auto',
-        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
-      },
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'web_search',
+            description: 'Search the web for current information',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query',
+                },
+                sources: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    enum: ['web', 'x', 'news'],
+                  },
+                  description: 'Sources to search from',
+                },
+              },
+              required: ['query'],
+            },
+          },
+        },
+      ],
+      tool_choice: 'auto',
     })
 
     const response = await xAIRequest(body)
@@ -588,11 +680,34 @@ export async function askSystemQuestion(
 User's question: ${question}`,
         },
       ],
-      live_search: true,
-      search_parameters: {
-        mode: 'auto',
-        sources: [{ type: 'web' }, { type: 'x' }, { type: 'news' }],
-      },
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'web_search',
+            description: 'Search the web for current information',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query',
+                },
+                sources: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    enum: ['web', 'x', 'news'],
+                  },
+                  description: 'Sources to search from',
+                },
+              },
+              required: ['query'],
+            },
+          },
+        },
+      ],
+      tool_choice: 'auto',
     })
 
     const response = await xAIRequest(body)
