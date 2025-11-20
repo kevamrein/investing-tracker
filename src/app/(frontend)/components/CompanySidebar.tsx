@@ -1,32 +1,100 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { Company } from '@/payload-types'
 import { AddCompanyModal } from '@/components/AddCompanyModal'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { getCompanies } from '@/app/actions/get-companies'
 
-export function CompanySidebar({ companies }: { companies: Company[] }) {
-  const [filteredCompanies, setFilteredCompanies] = useState(companies)
+export function CompanySidebar({ initialCompanies }: { initialCompanies: Company[] }) {
+  const [companies, setCompanies] = useState<Company[]>(initialCompanies)
   const [searchTerm, setSearchTerm] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const observerTarget = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
+  // Debounce search term to avoid too many requests
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm)
+
   useEffect(() => {
-    const filtered = companies.filter(
-      (company) =>
-        company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.ticker.toLowerCase().includes(searchTerm.toLowerCase()),
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Reset when search changes
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoading(true)
+      try {
+        const { docs, hasNextPage } = await getCompanies({
+          page: 1,
+          limit: 20,
+          query: debouncedSearchTerm,
+        })
+        setCompanies(docs)
+        setHasMore(hasNextPage)
+        setPage(1)
+      } catch (error) {
+        console.error('Error fetching companies:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCompanies()
+  }, [debouncedSearchTerm])
+
+  const loadMore = useCallback(async () => {
+    if (isLoading || !hasMore) return
+
+    setIsLoading(true)
+    try {
+      const nextPage = page + 1
+      const { docs, hasNextPage } = await getCompanies({
+        page: nextPage,
+        limit: 20,
+        query: debouncedSearchTerm,
+      })
+
+      setCompanies((prev) => [...prev, ...docs])
+      setHasMore(hasNextPage)
+      setPage(nextPage)
+    } catch (error) {
+      console.error('Error loading more companies:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [page, hasMore, isLoading, debouncedSearchTerm])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 },
     )
-    setFilteredCompanies(filtered)
-  }, [searchTerm, companies])
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current)
+    }
+
+    return () => observer.disconnect()
+  }, [loadMore, hasMore])
 
   return (
-    <div className="w-64 bg-card/95 backdrop-blur-sm shadow-xl h-screen sticky top-0 overflow-y-auto border-r border-border/50">
-      <div className="p-4 border-b border-border/50">
+    <div className="w-64 bg-card/95 backdrop-blur-sm shadow-xl h-screen sticky top-0 flex flex-col border-r border-border/50">
+      <div className="p-4 border-b border-border/50 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
             <svg
@@ -83,9 +151,9 @@ export function CompanySidebar({ companies }: { companies: Company[] }) {
           </div>
         </div>
       </div>
-      <nav className="p-2">
+      <nav className="p-2 flex-1 overflow-y-auto">
         <ul className="space-y-1">
-          {filteredCompanies.map((company) => (
+          {companies.map((company) => (
             <li key={company.id}>
               <Link
                 href={`/stock/${company.ticker}`}
@@ -112,11 +180,22 @@ export function CompanySidebar({ companies }: { companies: Company[] }) {
             </li>
           ))}
         </ul>
+        {hasMore && (
+          <div ref={observerTarget} className="p-4 flex justify-center">
+            {isLoading && <Loader2 className="h-6 w-6 animate-spin text-primary" />}
+          </div>
+        )}
       </nav>
       <AddCompanyModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onCompanyAdded={() => router.refresh()}
+        onCompanyAdded={() => {
+          router.refresh()
+          // Reset list
+          setPage(1)
+          setDebouncedSearchTerm('')
+          setSearchTerm('')
+        }}
       />
     </div>
   )
