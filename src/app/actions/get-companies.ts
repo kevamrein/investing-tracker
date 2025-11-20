@@ -1,7 +1,7 @@
 'use server'
 
 import { getPayload } from 'payload'
-import config from '@payload-config'
+import config from '@/payload.config'
 
 export async function getCompanies({
   page = 1,
@@ -14,7 +14,12 @@ export async function getCompanies({
 }) {
   const payload = await getPayload({ config })
 
-  const where: any = {}
+  const where: {
+    or?: Array<{
+      name?: { contains: string }
+      ticker?: { contains: string }
+    }>
+  } = {}
 
   if (query) {
     where.or = [

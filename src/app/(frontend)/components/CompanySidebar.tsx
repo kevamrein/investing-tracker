@@ -73,7 +73,7 @@ export function CompanySidebar({ initialCompanies }: { initialCompanies: Company
     } finally {
       setIsLoading(false)
     }
-  }, [page, hasMore, isLoading, debouncedSearchTerm])
+  }, [page, hasMore, debouncedSearchTerm])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -193,7 +193,6 @@ export function CompanySidebar({ initialCompanies }: { initialCompanies: Company
           router.refresh()
           // Reset list
           setPage(1)
-          setDebouncedSearchTerm('')
           setSearchTerm('')
         }}
       />
