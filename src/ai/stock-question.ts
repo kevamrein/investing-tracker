@@ -26,7 +26,7 @@ export async function askStockQuestion(
     context = await buildFullPortfolioContext(investorId, ticker, question)
   }
 
-  console.log(`Ask question context: ${previousResponseId}`)
+
 
   try {
     const body = JSON.stringify({

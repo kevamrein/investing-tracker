@@ -129,7 +129,7 @@ export async function generateStockInformation(
       )
     }
   } catch (error) {
-    console.error('Error in generateStockInformationWithLiveSearch:', error)
+    console.error('Error in generateStockInformation:', error)
     throw error
   }
 }
