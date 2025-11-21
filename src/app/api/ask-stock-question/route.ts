@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { askStockQuestion } from '@/ai/ai-service'
+import { askStockQuestion } from '@/ai/stock-question'
 
 export async function POST(request: NextRequest) {
   try {

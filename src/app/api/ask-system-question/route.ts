@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { askSystemQuestion } from '@/ai/ai-service'
+import { askSystemQuestion } from '@/ai/system-question'
 
 export async function POST(request: NextRequest) {
   try {
