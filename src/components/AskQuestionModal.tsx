@@ -30,7 +30,6 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
 
     setIsLoading(true)
     try {
-      console.log(`Ask question request: ${responseId}`)
       const response = await fetch('/api/ask-stock-question', {
         method: 'POST',
         headers: {
@@ -46,8 +45,8 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
       if (response.ok) {
         const data = await response.json()
         setAnswer(data.answer)
-        console.log(`Ask question response: ${data.responseId}`)
         setResponseId(data.responseId || null)
+        setQuestion('')
       } else {
         setAnswer("Sorry, I couldn't get an answer right now. Please try again.")
         setResponseId(null)

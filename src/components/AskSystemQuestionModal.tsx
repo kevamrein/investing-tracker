@@ -40,6 +40,7 @@ export function AskSystemQuestionModal() {
         const data = await response.json()
         setAnswer(data.answer)
         setResponseId(data.responseId)
+        setQuestion('')
       } else {
         setAnswer("Sorry, I couldn't get an answer right now. Please try again.")
         setResponseId(null)

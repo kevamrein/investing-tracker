@@ -25,8 +25,6 @@ export function AskPortfolioQuestionModal() {
 
     setIsLoading(true)
     try {
-      console.log(`Modal request response ID: ${responseId}`)
-
       const response = await fetch('/api/ask-portfolio-question', {
         method: 'POST',
         headers: {
@@ -39,11 +37,10 @@ export function AskPortfolioQuestionModal() {
       })
 
       if (response.ok) {
-        console.log('Modal received successful response')
         const data = await response.json()
         setAnswer(data.answer)
-        console.log(`Modal response ID: ${data.responseId}`)
         setResponseId(data.responseId || null)
+        setQuestion('')
       } else {
         setAnswer("Sorry, I couldn't get an answer right now. Please try again.")
         setResponseId(null)
