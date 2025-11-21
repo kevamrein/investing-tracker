@@ -104,7 +104,7 @@ export async function generateStockInformationWithLiveSearch(
       },
     })
 
-    const response = await xAIRequest(body)
+    const response = await xAIChatRequest(body)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -227,7 +227,7 @@ export async function generateInvestmentRecommendationWithLiveSearch(
       },
     })
 
-    const response = await xAIRequest(body)
+    const response = await xAIChatRequest(body)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -355,7 +355,7 @@ User's question: ${question}`,
       searchParameters: searchParameters,
     })
 
-    const response = await xAIRequest(body)
+    const response = await xAIChatRequest(body)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -486,7 +486,7 @@ User's question: ${question}`,
       searchParameters: searchParameters,
     })
 
-    const response = await xAIRequest(body)
+    const response = await xAIChatRequest(body)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -580,7 +580,7 @@ User's question: ${question}`,
       searchParameters: searchParameters,
     })
 
-    const response = await xAIRequest(body)
+    const response = await xAIChatRequest(body)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -607,8 +607,19 @@ User's question: ${question}`,
   }
 }
 
-async function xAIRequest(body: string): Promise<any> {
+async function xAIChatRequest(body: string): Promise<any> {
   return await fetch('https://api.x.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.X_AI_API_KEY}`,
+    },
+    body: body,
+  })
+}
+
+async function xAIResponsesRequest(body: string, responsesId?: string): Promise<any> {
+  return await fetch('https://api.x.ai/v1/responses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
