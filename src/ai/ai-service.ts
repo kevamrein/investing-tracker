@@ -1,5 +1,6 @@
 export const reasoningModel = 'grok-4-fast-reasoning'
 export const nonReasoningModel = 'grok-4-fast'
+export const defaultModel = process.env.CHEAP_MODE === 'true' ? nonReasoningModel : reasoningModel
 
 export const searchParameters = {
   mode: 'auto',
@@ -7,7 +8,7 @@ export const searchParameters = {
 }
 
 export const tools =
-  process.env.DISABLE_LIVE_SEARCH === 'true'
+  process.env.CHEAP_MODE === 'true'
     ? []
     : [
         {

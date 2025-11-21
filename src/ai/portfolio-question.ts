@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { sql } from '@payloadcms/db-postgres/drizzle'
 import { getPayload } from 'payload'
-import { reasoningModel, tools, xAIResponsesRequest } from './ai-service'
+import { defaultModel, tools, xAIResponsesRequest } from './ai-service'
 
 export interface AskPortfolioQuestionRequest {
   question: string
@@ -29,7 +29,7 @@ export async function askPortfolioQuestion(
 
   try {
     const body = JSON.stringify({
-      model: reasoningModel,
+      model: defaultModel,
       input: [
         {
           role: 'system',

@@ -1,7 +1,7 @@
-import { getPayload } from 'payload'
 import config from '@payload-config'
+import { getPayload } from 'payload'
 import z from 'zod'
-import { reasoningModel, searchParameters, xAIChatRequest } from './ai-service'
+import { defaultModel, searchParameters, xAIChatRequest } from './ai-service'
 
 export interface StockInformationResponse {
   bullCase: string
@@ -17,7 +17,7 @@ export async function generateStockInformation(
 ): Promise<StockInformationResponse> {
   try {
     const body = JSON.stringify({
-      model: reasoningModel,
+      model: defaultModel,
       messages: [
         {
           role: 'system',

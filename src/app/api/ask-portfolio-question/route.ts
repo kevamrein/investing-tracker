@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing question' }, { status: 400 })
     }
 
-    console.log(`Response Id ${responseId}`)
     const result = await askPortfolioQuestion({
       question,
       investorId: session.user.id,

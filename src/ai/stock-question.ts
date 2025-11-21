@@ -1,6 +1,6 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
-import { reasoningModel, tools, xAIResponsesRequest } from './ai-service'
+import { defaultModel, tools, xAIResponsesRequest } from './ai-service'
 
 export interface AskStockQuestionRequest {
   ticker: string
@@ -30,7 +30,7 @@ export async function askStockQuestion(
 
   try {
     const body = JSON.stringify({
-      model: reasoningModel,
+      model: defaultModel,
       input: [
         {
           role: 'system',
