@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { askPortfolioQuestion } from '@/ai/ai-service'
+import { askPortfolioQuestion } from '@/ai/portfolio-question'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { question } = await request.json()
+    const { question, responseId } = await request.json()
 
     if (!question) {
       return NextResponse.json({ error: 'Missing question' }, { status: 400 })
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     const result = await askPortfolioQuestion({
       question,
       investorId: session.user.id,
+      previousResponseId: responseId,
     })
 
     return NextResponse.json(result)

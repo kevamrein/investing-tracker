@@ -21,6 +21,7 @@ interface AskQuestionModalProps {
 export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
+  const [responseId, setResponseId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -29,7 +30,6 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
 
     setIsLoading(true)
     try {
-      // TODO: Call the AI service
       const response = await fetch('/api/ask-stock-question', {
         method: 'POST',
         headers: {
@@ -38,18 +38,23 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
         body: JSON.stringify({
           ticker,
           question,
+          previousResponseId: responseId || undefined,
         }),
       })
 
       if (response.ok) {
         const data = await response.json()
         setAnswer(data.answer)
+        setResponseId(data.responseId || null)
+        setQuestion('')
       } else {
         setAnswer("Sorry, I couldn't get an answer right now. Please try again.")
+        setResponseId(null)
       }
     } catch (error) {
       console.error('Error asking question:', error)
       setAnswer('An error occurred. Please try again.')
+      setResponseId(null)
     } finally {
       setIsLoading(false)
     }

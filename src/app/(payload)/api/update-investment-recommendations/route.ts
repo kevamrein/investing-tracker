@@ -1,7 +1,10 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { generateInvestmentRecommendationWithLiveSearch, PreviousInvestment } from '@/ai/ai-service'
 import { Company } from '@/payload-types'
+import {
+  PreviousInvestment,
+  generateInvestmentRecommendationWithLiveSearch,
+} from '@/ai/generate-investment-recommendation'
 
 export async function GET(request: Request) {
   try {

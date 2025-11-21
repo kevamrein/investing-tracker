@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { generateStockInformationWithLiveSearch } from '@/ai/ai-service'
+import { generateStockInformation } from '@/ai/generate-stock-information'
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
   companies.docs.forEach(async (company) => {
     console.log('Updating company', company.ticker)
     const { ticker } = company
-    const response = await generateStockInformationWithLiveSearch({ ticker })
+    const response = await generateStockInformation({ ticker })
     const date = new Date().toISOString()
     let bullCase = company.bullCase || []
     let bearCase = company.bearCase || []

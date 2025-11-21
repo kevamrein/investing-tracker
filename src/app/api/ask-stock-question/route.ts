@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { askStockQuestion } from '@/ai/ai-service'
+import { askStockQuestion } from '@/ai/stock-question'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { ticker, question } = await request.json()
+    const { ticker, question, previousResponseId } = await request.json()
 
     if (!ticker || !question) {
       return NextResponse.json({ error: 'Missing ticker or question' }, { status: 400 })
@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       ticker,
       question,
       investorId: session.user.id,
+      previousResponseId: previousResponseId,
     })
 
     return NextResponse.json(result)
