@@ -1,22 +1,60 @@
-import { getPayload } from 'payload'
-import { sql } from '@payloadcms/db-postgres/drizzle'
 import config from '@payload-config'
-import { reasoningModel, searchParameters, xAIChatRequest, xAIResponsesRequest } from './ai-service'
+import { sql } from '@payloadcms/db-postgres/drizzle'
+import { getPayload } from 'payload'
+import { reasoningModel, tools, xAIResponsesRequest } from './ai-service'
 
 export interface AskPortfolioQuestionRequest {
   question: string
   investorId: string
+  previousResponseId?: string
 }
 
 export interface AskPortfolioQuestionResponse {
   answer: string
+  responseId?: string
 }
 
 export async function askPortfolioQuestion(
   request: AskPortfolioQuestionRequest,
 ): Promise<AskPortfolioQuestionResponse> {
-  const { question, investorId } = request
+  const { question, investorId, previousResponseId } = request
 
+  let userContent = null
+  if (previousResponseId) {
+    userContent = question
+  } else {
+    const fullContext = await buildFullPortfiolioContext(investorId)
+    userContent = `Portfolio holdings: ${fullContext} User's question: ${question}`
+  }
+
+  try {
+    const body = JSON.stringify({
+      model: reasoningModel,
+      input: [
+        {
+          role: 'system',
+          content:
+            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Use live search to get current stock prices and any other market data you need. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. When considering investment opportunities, remember that the investor can sell existing shares to raise additional cash beyond their current investable assets, and factor in tax implications of selling based on cost basis and holding periods. Keep the response under 300 words but do not return the word count.',
+        },
+        {
+          role: 'user',
+          content: userContent,
+        },
+      ],
+      tools: tools,
+      previous_response_id: previousResponseId,
+    })
+
+    const response = await xAIResponsesRequest(body)
+
+    return { answer: response.output!, responseId: response.responseId }
+  } catch (error) {
+    console.error('Error in askPortfolioQuestion:', error)
+    throw error
+  }
+}
+
+async function buildFullPortfiolioContext(investorId: string): Promise<string> {
   const payload = await getPayload({ config })
 
   // Get the investor's investable assets
@@ -95,34 +133,5 @@ export async function askPortfolioQuestion(
     )
     .join('; ')
 
-  const fullContext = `${portfolioContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
-
-  try {
-    const body = JSON.stringify({
-      model: reasoningModel,
-      input: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Use live search to get current stock prices and any other market data you need. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. When considering investment opportunities, remember that the investor can sell existing shares to raise additional cash beyond their current investable assets, and factor in tax implications of selling based on cost basis and holding periods. Keep the response under 300 words but do not return the word count.',
-        },
-        {
-          role: 'user',
-          content: `Portfolio holdings: ${fullContext}
-
-User's question: ${question}`,
-        },
-      ],
-      searchParameters: searchParameters,
-    })
-
-    const response = await xAIResponsesRequest(body)
-
-    const answer = response.output!
-
-    return { answer }
-  } catch (error) {
-    console.error('Error in askPortfolioQuestion:', error)
-    throw error
-  }
+  return `${portfolioContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
 }

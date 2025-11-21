@@ -6,17 +6,21 @@ export const searchParameters = {
   sources: ['web', 'x', 'news'],
 }
 
-export const tools = [
-  {
-    type: 'web_search',
-  },
-  {
-    type: 'x_search',
-  },
-]
+export const tools =
+  process.env.DISABLE_LIVE_SEARCH === 'true'
+    ? []
+    : [
+        {
+          type: 'web_search',
+        },
+        {
+          type: 'x_search',
+        },
+      ]
 
 export interface ResponsesAPIResponse {
   output?: string
+  responseId?: string
 }
 
 export async function xAIChatRequest(body: string): Promise<any> {
@@ -51,6 +55,7 @@ export async function xAIResponsesRequest(body: string): Promise<ResponsesAPIRes
   }
 
   const data = await response.json()
+  console.log(JSON.stringify({ body: JSON.parse(body), response: data }))
   let output = null
   for (const item of data.output) {
     if (item.content) {
@@ -63,5 +68,5 @@ export async function xAIResponsesRequest(body: string): Promise<ResponsesAPIRes
     throw new Error('Invalid response format from XAI API')
   }
 
-  return { output }
+  return { output, responseId: data.id }
 }

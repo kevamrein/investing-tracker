@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { question } = await request.json()
+    const { question, responseId } = await request.json()
 
     if (!question) {
       return NextResponse.json({ error: 'Missing question' }, { status: 400 })
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     const result = await askSystemQuestion({
       question,
       investorId: session.user.id,
+      responseId: responseId,
     })
 
     return NextResponse.json(result)

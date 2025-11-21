@@ -5,17 +5,55 @@ import { reasoningModel, tools, xAIResponsesRequest } from './ai-service'
 export interface AskSystemQuestionRequest {
   question: string
   investorId: string
+  responseId?: string
 }
 
 export interface AskSystemQuestionResponse {
   answer: string
+  responseId?: string
 }
 
 export async function askSystemQuestion(
   request: AskSystemQuestionRequest,
 ): Promise<AskSystemQuestionResponse> {
-  const { question, investorId } = request
+  const { question, investorId, responseId } = request
 
+  let context = null
+  if (responseId) {
+    context = question
+  } else {
+    const fullContext = await buildFullContext(investorId)
+    context = `System context: ${fullContext} User's question: ${question}`
+  }
+
+  try {
+    const body = JSON.stringify({
+      model: reasoningModel,
+      input: [
+        {
+          role: 'system',
+          content:
+            "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
+        },
+        {
+          role: 'user',
+          content: context,
+        },
+      ],
+      tools: tools,
+      previous_response_id: responseId,
+    })
+
+    const response = await xAIResponsesRequest(body)
+
+    return { answer: response.output!, responseId: response.responseId }
+  } catch (error) {
+    console.error('Error in askSystemQuestion:', error)
+    throw error
+  }
+}
+
+async function buildFullContext(investorId: string) {
   const payload = await getPayload({ config })
 
   // Get all companies with their tickers
@@ -57,32 +95,5 @@ export async function askSystemQuestion(
     })
     .join('; ')
 
-  const fullContext = `All companies in system: ${companiesContext}; User's transaction history: ${transactionsContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
-
-  try {
-    const body = JSON.stringify({
-      model: reasoningModel,
-      input: [
-        {
-          role: 'system',
-          content:
-            "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
-        },
-        {
-          role: 'user',
-          content: `System context: ${fullContext}
-
-User's question: ${question}`,
-        },
-      ],
-      tools: tools,
-    })
-
-    const response = await xAIResponsesRequest(body)
-
-    return { answer: response.output! }
-  } catch (error) {
-    console.error('Error in askSystemQuestion:', error)
-    throw error
-  }
+  return `All companies in system: ${companiesContext}; User's transaction history: ${transactionsContext}; Total investable assets: $${totalInvestableAssets.toFixed(2)}`
 }

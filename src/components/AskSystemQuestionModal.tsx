@@ -16,6 +16,7 @@ import ReactMarkdown from 'react-markdown'
 export function AskSystemQuestionModal() {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
+  const [responseId, setResponseId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -31,18 +32,22 @@ export function AskSystemQuestionModal() {
         },
         body: JSON.stringify({
           question,
+          responseId: responseId,
         }),
       })
 
       if (response.ok) {
         const data = await response.json()
         setAnswer(data.answer)
+        setResponseId(data.responseId)
       } else {
         setAnswer("Sorry, I couldn't get an answer right now. Please try again.")
+        setResponseId(null)
       }
     } catch (error) {
       console.error('Error asking system question:', error)
       setAnswer('An error occurred. Please try again.')
+      setResponseId(null)
     } finally {
       setIsLoading(false)
     }

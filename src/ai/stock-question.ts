@@ -6,17 +6,60 @@ export interface AskStockQuestionRequest {
   ticker: string
   question: string
   investorId: string
+  previousResponseId?: string
 }
 
 export interface AskStockQuestionResponse {
   answer: string
+  responseId?: string
 }
 
 export async function askStockQuestion(
   request: AskStockQuestionRequest,
 ): Promise<AskStockQuestionResponse> {
-  const { ticker, question, investorId } = request
+  const { ticker, question, investorId, previousResponseId } = request
 
+  let context = null
+  if (previousResponseId) {
+    context = question
+  } else {
+    context = await buildFullPortfolioContext(investorId, ticker, question)
+  }
+
+  console.log(`Ask question context: ${previousResponseId}`)
+
+  try {
+    const body = JSON.stringify({
+      model: reasoningModel,
+      input: [
+        {
+          role: 'system',
+          content:
+            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given context and your financial expertise. Keep the response under 300 words but do not return the word count.',
+        },
+        {
+          role: 'user',
+          content: context,
+        },
+      ],
+      tools: tools,
+      previous_response_id: previousResponseId,
+    })
+
+    const response = await xAIResponsesRequest(body)
+
+    return { answer: response.output!, responseId: response.responseId }
+  } catch (error) {
+    console.error('Error in askStockQuestion:', error)
+    throw error
+  }
+}
+
+async function buildFullPortfolioContext(
+  investorId: string,
+  ticker: string,
+  question: string,
+): Promise<string> {
   // Get user transaction history for this stock
   const payload = await getPayload({ config })
   const companyId = await payload
@@ -77,32 +120,9 @@ export async function askStockQuestion(
       }
     : null
 
-  try {
-    const body = JSON.stringify({
-      model: reasoningModel,
-      input: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given context and your financial expertise. Keep the response under 300 words but do not return the word count.',
-        },
-        {
-          role: 'user',
-          content: `Context:
+  return `Context:
 - User's transaction history for ${ticker}: ${JSON.stringify(transactionContext)}
 - Most recent market mover: ${moverContext ? JSON.stringify(moverContext) : 'None available'}
 
-User's question: ${question}`,
-        },
-      ],
-      tools: tools,
-    })
-
-    const response = await xAIResponsesRequest(body)
-
-    return { answer: response.output! }
-  } catch (error) {
-    console.error('Error in askStockQuestion:', error)
-    throw error
-  }
+User's question: ${question}`
 }
