@@ -53,6 +53,9 @@ export async function GET(request: Request) {
     let bullCase = company.bullCase || []
     let bearCase = company.bearCase || []
 
+    console.log(`Current bull case: ${JSON.stringify(bullCase)}`)
+    console.log(`Current bear case: ${JSON.stringify(bearCase)}`)
+
     bullCase.push({
       opinionText: response.bullCase,
       opinionDate: date,
@@ -65,7 +68,7 @@ export async function GET(request: Request) {
     console.log(`Bull case: ${JSON.stringify(bullCase)}`)
     console.log(`Bear case: ${JSON.stringify(bearCase)}`)
 
-    await payload.update({
+    const result = await payload.update({
       collection: 'company',
       id: company.id,
       data: {
@@ -75,6 +78,8 @@ export async function GET(request: Request) {
       user: processingUser,
       overrideAccess: true,
     })
+
+    console.log(`Result: ${JSON.stringify(result)}`)
   })
 
   console.log('Recommendations updated')
