@@ -88,6 +88,7 @@ export async function GET(request: Request) {
                 shares: investment.shares,
                 pricePerShare: investment.pricePerShare,
                 date: new Date(investment.investmentDate),
+                accountType: investment.accountType,
               }
             })
 
