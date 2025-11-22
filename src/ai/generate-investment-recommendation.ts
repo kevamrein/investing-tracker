@@ -1,5 +1,5 @@
 import z from 'zod'
-import { reasoningModel, searchParameters, xAIChatRequest } from './ai-service'
+import { defaultModel, reasoningModel, searchParameters, xAIChatRequest } from './ai-service'
 
 export interface InvestmentRecommendationRequest {
   ticker: string
@@ -24,7 +24,7 @@ export async function generateInvestmentRecommendationWithLiveSearch(
 ): Promise<InvestmentRecommendationResponse> {
   try {
     const body = JSON.stringify({
-      model: reasoningModel,
+      model: defaultModel,
       messages: [
         {
           role: 'system',
