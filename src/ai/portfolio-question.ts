@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { sql } from '@payloadcms/db-postgres/drizzle'
 import { getPayload } from 'payload'
-import { defaultModel, tools, xAIResponsesRequest } from './ai-service'
+import { handleResponsesWithTools } from './ai-service'
 
 export interface AskPortfolioQuestionRequest {
   question: string
@@ -28,26 +28,19 @@ export async function askPortfolioQuestion(
   }
 
   try {
-    const body = JSON.stringify({
-      model: defaultModel,
-      input: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Use live search to get current stock prices and any other market data you need. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. When considering investment opportunities, remember that the investor can sell existing shares to raise additional cash beyond their current investable assets, and factor in tax implications of selling based on cost basis and holding periods. Keep the response under 300 words but do not return the word count.',
-        },
-        {
-          role: 'user',
-          content: userContent,
-        },
-      ],
-      tools: tools,
-      previous_response_id: previousResponseId,
-    })
+    let inputMessages = [
+      {
+        role: 'system',
+        content:
+          'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given portfolio context and your financial expertise. Use live search to get current stock prices and any other market data you need. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. When considering investment opportunities, remember that the investor can sell existing shares to raise additional cash beyond their current investable assets, and factor in tax implications of selling based on cost basis and holding periods. Keep the response under 300 words but do not return the word count.',
+      },
+      {
+        role: 'user',
+        content: userContent,
+      },
+    ]
 
-    const response = await xAIResponsesRequest(body)
-
-    return { answer: response.output!, responseId: response.responseId }
+    return await handleResponsesWithTools(inputMessages, previousResponseId)
   } catch (error) {
     console.error('Error in askPortfolioQuestion:', error)
     throw error
