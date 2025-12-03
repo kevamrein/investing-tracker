@@ -1,6 +1,6 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
-import { defaultModel, tools, xAIResponsesRequest } from './ai-service'
+import { handleResponsesWithTools } from './ai-service'
 
 export interface AskSystemQuestionRequest {
   question: string
@@ -27,26 +27,19 @@ export async function askSystemQuestion(
   }
 
   try {
-    const body = JSON.stringify({
-      model: defaultModel,
-      input: [
-        {
-          role: 'system',
-          content:
-            "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
-        },
-        {
-          role: 'user',
-          content: context,
-        },
-      ],
-      tools: tools,
-      previous_response_id: responseId,
-    })
+    let inputMessages = [
+      {
+        role: 'system',
+        content:
+          "You are an expert financial analyst providing insights about an investor tracking system. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. Use live search for current market data when needed. Keep responses under 300 words but do not return the word count.",
+      },
+      {
+        role: 'user',
+        content: context,
+      },
+    ]
 
-    const response = await xAIResponsesRequest(body)
-
-    return { answer: response.output!, responseId: response.responseId }
+    return await handleResponsesWithTools(inputMessages, responseId)
   } catch (error) {
     console.error('Error in askSystemQuestion:', error)
     throw error

@@ -1,6 +1,6 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
-import { defaultModel, tools, xAIResponsesRequest } from './ai-service'
+import { handleResponsesWithTools } from './ai-service'
 
 export interface AskStockQuestionRequest {
   ticker: string
@@ -26,29 +26,20 @@ export async function askStockQuestion(
     context = await buildFullPortfolioContext(investorId, ticker, question)
   }
 
-
-
   try {
-    const body = JSON.stringify({
-      model: defaultModel,
-      input: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given context and your financial expertise. Keep the response under 300 words but do not return the word count.',
-        },
-        {
-          role: 'user',
-          content: context,
-        },
-      ],
-      tools: tools,
-      previous_response_id: previousResponseId,
-    })
+    let inputMessages = [
+      {
+        role: 'system',
+        content:
+          'You are an expert financial analyst providing personalized insights for a stock trading app. Provide a concise, helpful answer based on the given context and your financial expertise. Keep the response under 300 words but do not return the word count.',
+      },
+      {
+        role: 'user',
+        content: context,
+      },
+    ]
 
-    const response = await xAIResponsesRequest(body)
-
-    return { answer: response.output!, responseId: response.responseId }
+    return await handleResponsesWithTools(inputMessages, previousResponseId)
   } catch (error) {
     console.error('Error in askStockQuestion:', error)
     throw error
