@@ -105,13 +105,27 @@ export async function handleResponsesWithTools(
       // Execute the function calls and append results
       for (const call of functionCalls) {
         if (call.name === 'get_current_stock_price') {
-          const args = JSON.parse(call.arguments)
-          const result = await getCurrentStockPrice(args.ticker)
-          inputMessages.push({
-            role: 'tool',
-            content: JSON.stringify(result),
-            tool_call_id: call.id,
-          } as any)
+          try {
+            const args = JSON.parse(call.arguments)
+            const result = await getCurrentStockPrice(args.ticker)
+            inputMessages.push({
+              role: 'tool',
+              content: JSON.stringify(result),
+              tool_call_id: call.id,
+            } as any)
+          } catch (error) {
+            // Send error message to AI so it knows the tool failed
+            inputMessages.push({
+              role: 'tool',
+              content: JSON.stringify({
+                error: 'Tool execution failed',
+                message: error instanceof Error ? error.message : 'Unknown error',
+                tool: 'get_current_stock_price',
+                ticker: JSON.parse(call.arguments).ticker,
+              }),
+              tool_call_id: call.id,
+            } as any)
+          }
         }
       }
       // Set previous_response_id for the next request
