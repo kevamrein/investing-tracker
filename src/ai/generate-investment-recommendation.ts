@@ -1,5 +1,5 @@
 import z from 'zod'
-import { defaultModel, reasoningModel, searchParameters, xAIChatRequest } from './ai-service'
+import { handleResponsesWithTools } from './ai-service'
 
 export interface InvestmentRecommendationRequest {
   ticker: string
@@ -19,64 +19,115 @@ export interface PreviousInvestment {
   accountType?: 'taxable' | 'ira' | string
 }
 
+function buildSystemPrompt(): string {
+  const isCheapMode = process.env.CHEAP_MODE === 'true'
+
+  return `You are an expert financial analyst providing accurate, up-to-date insights for a personal stock trading app.
+
+${
+  isCheapMode
+    ? 'NOTE: Real-time data access is limited. Use your training data knowledge for analysis.'
+    : 'IMPORTANT: You have access to web search and the get_current_stock_price tool. You MUST use these tools to fetch current stock prices and recent market data before making recommendations.'
+}
+
+For U.S. tax calculations, use these specific rates:
+- Short-term capital gains (held < 1 year): Taxed as ordinary income. Use 24% as default assumption.
+- Long-term capital gains (held ≥ 1 year): Use 15% as default assumption.
+- IRA accounts: Tax-deferred, so ignore tax implications for IRA holdings.
+
+You must respond with a JSON object containing:
+- buySellHoldRecommendation: Must be exactly one of: "buy", "sell", or "hold"
+- recommendationReasoning: A clear 3-4 sentence explanation with data-driven reasoning`
+}
+
+function buildUserPrompt(stockData: InvestmentRecommendationRequest): string {
+  const hasInvestments = stockData.investments && stockData.investments.length > 0
+  const isCheapMode = process.env.CHEAP_MODE === 'true'
+
+  if (hasInvestments) {
+    // Determine account types
+    const accountTypes = new Set(stockData.investments!.map((inv) => inv.accountType || 'taxable'))
+    const isSingleAccountType = accountTypes.size === 1
+    const accountType = isSingleAccountType ? Array.from(accountTypes)[0] : 'mixed'
+
+    return `Ticker: ${stockData.ticker}
+
+Investment History:
+${JSON.stringify(stockData.investments, null, 2)}
+
+Tasks:
+1. ${isCheapMode ? 'Estimate' : 'Get'} the current market price for ${stockData.ticker}${isCheapMode ? ' based on your training data' : ' using the get_current_stock_price tool'}
+2. Calculate the total shares currently held (sum of buy transactions minus sell transactions)
+3. Calculate the average cost basis (weighted average price of buy transactions only)
+4. Calculate the current position value (total shares × current price)
+5. Determine the holding period for tax purposes:
+   - If most recent buy was < 1 year ago: short-term (24% tax rate)
+   - If most recent buy was ≥ 1 year ago: long-term (15% tax rate)
+6. Calculate unrealized gains/losses and estimate tax impact
+
+Account Type Analysis:
+${
+  isSingleAccountType
+    ? `All investments are in a ${accountType} account.
+${
+  accountType === 'ira'
+    ? '- Focus on total returns (ignore tax implications)'
+    : '- Prioritize tax-efficient strategies and maximize after-tax returns'
+}`
+    : `Investments span multiple account types (${Array.from(accountTypes).join(', ')}).
+- Provide a holistic view considering both tax-advantaged and taxable accounts
+- Note any strategic differences between account types`
+}
+
+Recommendation Criteria:
+Provide a buy, sell, or hold recommendation for a slightly risk-tolerant investor aiming to beat the market with extra funds.
+- Prioritize non-consensus insights and emerging trends
+- Consider underappreciated risks or opportunities
+- ${accountType === 'taxable' ? 'Factor in tax implications to maximize after-tax returns' : accountType === 'ira' ? 'Focus on maximizing total returns' : 'Balance tax efficiency with growth potential'}
+- Base your reasoning on verifiable, data-driven analysis
+
+Provide 3-4 sentences of clear reasoning supporting your recommendation.`
+  } else {
+    return `Ticker: ${stockData.ticker}
+
+No existing position. This is a new potential investment.
+
+Tasks:
+1. ${isCheapMode ? 'Estimate' : 'Get'} the current market price for ${stockData.ticker}${isCheapMode ? ' based on your training data' : ' using the get_current_stock_price tool'}
+2. ${isCheapMode ? 'Recall recent performance' : 'Search for recent performance and news'} for ${stockData.ticker}
+3. Analyze current market conditions and sentiment
+
+Recommendation Criteria:
+Provide a buy, sell, or hold recommendation for a slightly risk-tolerant investor considering a new position.
+- Focus on non-consensus insights and emerging trends
+- Consider both upside potential and downside risks
+- Evaluate if this is a good entry point at current valuations
+- Base your reasoning on verifiable, data-driven analysis
+
+Provide 3-4 sentences of clear reasoning supporting your recommendation.`
+  }
+}
+
 export async function generateInvestmentRecommendationWithLiveSearch(
   stockData: InvestmentRecommendationRequest,
 ): Promise<InvestmentRecommendationResponse> {
   try {
-    const body = JSON.stringify({
-      model: defaultModel,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing accurate, up-to-date insights for a personal stock trading app. You must respond with a JSON object containing buySellHoldRecommendation (one of: "buy", "sell", "hold") and recommendationReasoning (a string with 2 sentences max).',
-        },
-        {
-          role: 'user',
-          content: `For the ticker symbol ${stockData.ticker}, if the JSON list of investments below is not empty, calculate the current position's total shares, average cost basis (for buy transactions only), total current value using the latest market price, and estimate capital gains tax implications (short-term vs. long-term, assuming U.S. tax rates). Each investment includes an accountType field (either 'taxable' or 'ira'). If all investments are in the same account type, tailor your recommendation and reasoning for that account type (e.g., consider tax implications for taxable, ignore for IRA). If there are investments in multiple account types, provide a holistic overview and call out any differences in strategy or implications. Provide a buy, sell, or hold recommendation tailored for a slightly risk-tolerant investor aiming to beat the market with extra funds, prioritizing non-consensus insights, emerging trends, or underappreciated risks, and factoring in tax implications to maximize after-tax returns; justify it in 4 sentences max with verifiable, data-driven reasoning. If the investment list is empty, base the recommendation on current market conditions and recent stock performance, assuming a new position with no tax history. Investments: ${JSON.stringify(stockData.investments)}`,
-        },
-      ],
-      searchParameters: searchParameters,
-      response_format: {
-        type: 'json_object',
-        json_schema: {
-          type: 'object',
-          properties: {
-            buySellHoldRecommendation: {
-              type: 'string',
-              enum: ['buy', 'sell', 'hold'],
-              description: 'The recommended action for the stock',
-            },
-            recommendationReasoning: {
-              type: 'string',
-              description: 'The reasoning behind the recommendation (2 sentences max)',
-            },
-          },
-          required: ['buySellHoldRecommendation', 'recommendationReasoning'],
-          additionalProperties: false,
-        },
+    const systemPrompt = buildSystemPrompt()
+    const userPrompt = buildUserPrompt(stockData)
+
+    const inputMessages = [
+      {
+        role: 'system',
+        content: systemPrompt,
       },
-    })
+      {
+        role: 'user',
+        content: userPrompt,
+      },
+    ]
 
-    const response = await xAIChatRequest(body)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('XAI API error details:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText,
-      })
-      throw new Error(`XAI API error: ${response.statusText}. Details: ${errorText}`)
-    }
-
-    const data = await response.json()
-
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response format from XAI API')
-    }
-
-    const content = data.choices[0].message.content
+    // Use the Responses API which supports tools (web search, x search, get_current_stock_price)
+    const { answer } = await handleResponsesWithTools(inputMessages)
 
     // Parse and validate the response using Zod
     const responseSchema = z.object({
@@ -85,13 +136,14 @@ export async function generateInvestmentRecommendationWithLiveSearch(
     })
 
     try {
-      const parsedContent = JSON.parse(content)
+      const parsedContent = JSON.parse(answer)
       const validatedResponse = responseSchema.parse(parsedContent)
       return validatedResponse
     } catch (parseError: unknown) {
       console.error('Error parsing response:', parseError)
+      console.error('Raw response:', answer)
       throw new Error(
-        `Failed to parse XAI API response: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+        `Failed to parse API response: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
       )
     }
   } catch (error) {

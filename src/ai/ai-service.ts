@@ -2,11 +2,6 @@ export const reasoningModel = 'grok-4-fast-reasoning'
 export const nonReasoningModel = 'grok-4-fast'
 export const defaultModel = process.env.CHEAP_MODE === 'true' ? nonReasoningModel : reasoningModel
 
-export const searchParameters = {
-  mode: 'auto',
-  sources: ['web', 'x', 'news'],
-}
-
 const getCurrentStockPriceTool = {
   type: 'function',
   name: 'get_current_stock_price',

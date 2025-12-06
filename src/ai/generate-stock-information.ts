@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 import z from 'zod'
-import { defaultModel, searchParameters, xAIChatRequest } from './ai-service'
+import { handleResponsesWithTools } from './ai-service'
 
 export interface StockInformationResponse {
   bullCase: string
@@ -12,63 +12,66 @@ export interface StockInformationRequest {
   ticker: string
 }
 
+function buildSystemPrompt(): string {
+  const isCheapMode = process.env.CHEAP_MODE === 'true'
+
+  return `You are an expert financial analyst providing accurate, up-to-date insights for a personal stock trading app.
+
+${
+  isCheapMode
+    ? 'NOTE: Real-time data access is limited. Use your training data knowledge for analysis.'
+    : 'IMPORTANT: You have access to web search and stock price tools. Use them to gather recent, verifiable information.'
+}
+
+You must respond with a JSON object containing:
+- bullCase: A concise bull case for the stock (3 sentences max)
+- bearCase: A concise bear case for the stock (3 sentences max)`
+}
+
+function buildUserPrompt(ticker: string): string {
+  const isCheapMode = process.env.CHEAP_MODE === 'true'
+
+  return `Ticker: ${ticker}
+
+${isCheapMode ? 'Based on your training data' : 'Research and analyze current information'}, provide:
+
+1. Bull Case (3 sentences max):
+   - Focus on unique, non-consensus opportunities
+   - Highlight emerging trends or underreported metrics
+   - Identify early signals that could lead to outsized returns
+   - Base analysis on precise, data-driven insights
+
+2. Bear Case (3 sentences max):
+   - Focus on underappreciated risks or vulnerabilities
+   - Highlight shifts in competitive dynamics or market headwinds
+   - Identify early warning signals that could lead to significant losses
+   - Base analysis on precise, data-driven insights
+
+Avoid mainstream narratives. Prioritize verifiable information from reliable sources.
+
+Respond with a JSON object containing bullCase and bearCase fields.`
+}
+
 export async function generateStockInformation(
   stockData: StockInformationRequest,
 ): Promise<StockInformationResponse> {
   try {
-    const body = JSON.stringify({
-      model: defaultModel,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an expert financial analyst providing accurate, up-to-date insights for a personal stock trading app. You must respond with a JSON object containing bullCase (a string with 3 sentences max) and bearCase (a string with 3 sentences max).',
-        },
-        {
-          role: 'user',
-          content: `For the company with ticker symbol ${stockData.ticker}, provide a concise bull case (3 sentences max) and bear case (3 sentences max) based on unique, recent, and verifiable information that highlights non-consensus opportunities or risks. Prioritize early signals, such as emerging trends, underreported metrics, or shifts in competitive dynamics, that could lead to outsized returns or significant losses. Avoid mainstream narratives and focus on precise, data-driven insights from reliable sources.`,
-        },
-      ],
-      searchParameters: searchParameters,
-      response_format: {
-        type: 'json_object',
-        json_schema: {
-          type: 'object',
-          properties: {
-            bullCase: {
-              type: 'string',
-              description: 'A concise bull case for the stock (3 sentences max)',
-            },
-            bearCase: {
-              type: 'string',
-              description: 'A concise bear case for the stock (3 sentences max)',
-            },
-          },
-          required: ['bullCase', 'bearCase'],
-          additionalProperties: false,
-        },
+    const systemPrompt = buildSystemPrompt()
+    const userPrompt = buildUserPrompt(stockData.ticker)
+
+    const inputMessages = [
+      {
+        role: 'system',
+        content: systemPrompt,
       },
-    })
+      {
+        role: 'user',
+        content: userPrompt,
+      },
+    ]
 
-    const response = await xAIChatRequest(body)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('XAI API error details:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText,
-      })
-      throw new Error(`XAI API error: ${response.statusText}. Details: ${errorText}`)
-    }
-
-    const data = await response.json()
-
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response format from XAI API')
-    }
-
-    const content = data.choices[0].message.content
+    // Use the Responses API which supports tools (web search, x search, get_current_stock_price)
+    const { answer } = await handleResponsesWithTools(inputMessages)
 
     // Parse and validate the response using Zod
     const responseSchema = z.object({
@@ -77,7 +80,7 @@ export async function generateStockInformation(
     })
 
     try {
-      const parsedContent = JSON.parse(content)
+      const parsedContent = JSON.parse(answer)
       const validatedResponse = responseSchema.parse(parsedContent)
 
       // Get the company record
@@ -124,8 +127,9 @@ export async function generateStockInformation(
       return validatedResponse
     } catch (parseError: unknown) {
       console.error('Error parsing response:', parseError)
+      console.error('Raw response:', answer)
       throw new Error(
-        `Failed to parse XAI API response: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+        `Failed to parse API response: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
       )
     }
   } catch (error) {
