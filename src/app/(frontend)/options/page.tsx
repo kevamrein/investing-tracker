@@ -94,14 +94,14 @@ async function StatsCards() {
     calculatePerformance(),
   ])
 
-  const highScoreCount = opportunities.success ? opportunities.docs.length : 0
-  const openCount = trades.success ? trades.docs.length : 0
+  const highScoreCount = opportunities.success ? (opportunities.docs?.length || 0) : 0
+  const openCount = trades.success ? (trades.docs?.length || 0) : 0
   const winRate =
-    performance.success && performance.metrics.totalTrades > 0
+    performance.success && performance.metrics && performance.metrics.totalTrades > 0
       ? performance.metrics.winRate
       : null
   const totalPnl =
-    performance.success && performance.metrics.totalTrades > 0
+    performance.success && performance.metrics && performance.metrics.totalTrades > 0
       ? performance.metrics.totalPnl
       : 0
 
@@ -125,7 +125,7 @@ async function StatsCards() {
     {
       title: 'Win Rate',
       value: winRate !== null ? `${winRate.toFixed(1)}%` : 'N/A',
-      subtitle: performance.success && performance.metrics.totalTrades > 0
+      subtitle: performance.success && performance.metrics && performance.metrics.totalTrades > 0
         ? `${performance.metrics.totalTrades} trades`
         : 'No trades yet',
       icon: BarChart3,
@@ -178,7 +178,7 @@ async function RecentOpportunitiesCard() {
         </div>
       </CardHeader>
       <CardContent>
-        {result.success && result.docs.length > 0 ? (
+        {result.success && result.docs && result.docs.length > 0 ? (
           <div className="space-y-3">
             {result.docs.map((opp: any) => (
               <div
@@ -236,7 +236,7 @@ async function OpenPositionsCard() {
         </div>
       </CardHeader>
       <CardContent>
-        {result.success && result.docs.length > 0 ? (
+        {result.success && result.docs && result.docs.length > 0 ? (
           <div className="space-y-3">
             {result.docs.map((trade: any) => {
               const daysOpen = Math.floor(
@@ -285,7 +285,7 @@ async function OpenPositionsCard() {
 async function PerformanceOverviewCard() {
   const result = await calculatePerformance()
 
-  if (!result.success || result.metrics.totalTrades === 0) {
+  if (!result.success || !result.metrics || result.metrics.totalTrades === 0) {
     return (
       <Card>
         <CardHeader>

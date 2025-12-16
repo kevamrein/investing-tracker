@@ -55,7 +55,7 @@ export default function PerformancePage() {
     )
   }
 
-  if (!performance || performance.metrics.totalTrades === 0) {
+  if (!performance || !performance.metrics || performance.metrics.totalTrades === 0) {
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-6">Performance Analytics</h1>
