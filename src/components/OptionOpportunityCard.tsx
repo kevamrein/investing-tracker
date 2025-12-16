@@ -114,6 +114,16 @@ export function OptionOpportunityCard({ opportunity, onTradeCreated }: OptionOpp
             {signal.emoji} {signal.text}
           </div>
 
+          {/* Day 1 Waiting Period Reminder */}
+          {opportunity.status === 'pending' && opportunity.score >= 70 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
+              <div className="font-semibold text-blue-900 mb-1">⭐ Best Practice:</div>
+              <div className="text-blue-800">
+                Wait until Day 1 close to confirm stock stability. Only enter if stock is flat or up from post-earnings price. Skip if stock drops &gt;5% on Day 1.
+              </div>
+            </div>
+          )}
+
           {/* Action Button */}
           {opportunity.status === 'pending' && opportunity.score >= 70 && (
             <Button
