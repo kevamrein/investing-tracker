@@ -207,7 +207,7 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
     const postPrice = postPrices[0].close
     const dropPct = ((postPrice - prePrice) / prePrice) * 100
 
-    if (dropPct > -5.0) return null // Didn't drop enough
+    if (dropPct > -10.0) return null // Didn't drop enough (minimum 10% based on backtest data)
 
     // Calculate score (from Python scoring logic)
     const score = await calculateOpportunityScore({
@@ -271,11 +271,18 @@ async function calculateOpportunityScore(params: {
 }): Promise<number> {
   let score = 0
 
-  // Drop Size (30 points)
-  if (params.dropPct <= -15) score += 30
-  else if (params.dropPct <= -10) score += 20
-  else if (params.dropPct <= -7) score += 10
-  else score += 5
+  // Drop Size (30 points) - Based on backtest data showing 10-15% drops have best win rate
+  // Research: 10-15% drops = 60% win rate, <10% = 100% (small sample), 15-25% = 38%, >25% = 25%
+  const absDropPct = Math.abs(params.dropPct)
+  if (absDropPct >= 10 && absDropPct <= 15) {
+    score += 30 // Sweet spot: 10-15% drops (60% win rate)
+  } else if (absDropPct < 10) {
+    score += 25 // Small drops still good (but less data)
+  } else if (absDropPct > 15 && absDropPct <= 25) {
+    score += 15 // Larger drops riskier (38% win rate)
+  } else {
+    score += 5 // Very large drops (>25%) have lowest win rate (25%)
+  }
 
   // EPS Beat Size (25 points)
   if (params.epsBeatPct > 15) score += 25

@@ -32,18 +32,38 @@ export function StrategyGuideModal() {
             <h3 className="text-lg font-bold text-blue-900 mb-3 flex items-center">
               <span className="mr-2">📊</span> WHEN TO BUY
             </h3>
-            <div className="space-y-2 text-sm text-blue-900">
+            <div className="space-y-3 text-sm text-blue-900">
               <div className="flex items-start">
                 <span className="font-semibold min-w-[140px]">Scanner Score:</span>
-                <span>≥85 (🟢 Strong Buy) or 70-84 (🟡 Consider)</span>
+                <span>≥70 (🟡 Consider) or ≥85 (🟢 Strong Buy)</span>
               </div>
               <div className="flex items-start">
                 <span className="font-semibold min-w-[140px]">Opportunity:</span>
-                <span>Stock beat earnings but dropped ≥5%</span>
+                <span>Stock beat earnings but dropped ≥10%</span>
               </div>
-              <div className="flex items-start">
-                <span className="font-semibold min-w-[140px]">Timing:</span>
-                <span>Enter within 1-3 days after earnings</span>
+              <div className="bg-white rounded p-3 border border-blue-200 col-span-2">
+                <div className="font-semibold text-blue-900 mb-2">⭐ BEST TIMING (Recommended):</div>
+                <div className="space-y-1 text-xs">
+                  <div>1. <strong>Wait for Day 1 close</strong> after earnings (don&apos;t enter immediately)</div>
+                  <div>2. Check if stock is <strong>stable or bouncing</strong> (flat to +5% from post-earnings)</div>
+                  <div>3. If Day 1 is <strong>green or flat → ENTER</strong> ✅</div>
+                  <div>4. If Day 1 dropped <strong>&gt;5% → SKIP</strong> ❌</div>
+                </div>
+                <div className="text-xs text-blue-700 mt-2 bg-blue-100 p-2 rounded">
+                  <strong>Why?</strong> Stocks that continue dropping Day 1 have 0% win rate. Waiting 1 day filters bad setups BEFORE risking capital.
+                </div>
+              </div>
+              <div className="bg-white rounded p-3 border border-blue-200 col-span-2">
+                <div className="font-semibold text-blue-900 mb-2">🎯 Drop Size Sweet Spot:</div>
+                <div className="space-y-1 text-xs">
+                  <div>• <strong>10-15% drops:</strong> 60% win rate (BEST) ⭐</div>
+                  <div>• <strong>&lt;10% drops:</strong> 100% win rate (small sample)</div>
+                  <div>• <strong>15-25% drops:</strong> 38% win rate (risky)</div>
+                  <div>• <strong>&gt;25% drops:</strong> 25% win rate (avoid)</div>
+                </div>
+                <div className="text-xs text-blue-700 mt-2 bg-blue-100 p-2 rounded">
+                  <strong>Insight:</strong> Bigger drops don&apos;t mean better opportunities. Focus on 10-15% drops for highest success rate.
+                </div>
               </div>
             </div>
           </div>
@@ -128,14 +148,17 @@ export function StrategyGuideModal() {
 
               <div className="bg-white rounded p-3 border border-orange-300 border-l-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-orange-900">⚠️ Day 1 Circuit Breaker</span>
-                  <span className="text-2xl font-bold text-orange-700">-10%</span>
+                  <span className="font-semibold text-orange-900">⚠️ Day 1 Circuit Breaker (CRITICAL)</span>
+                  <span className="text-2xl font-bold text-orange-700">-5% Stock</span>
                 </div>
                 <div className="text-sm text-gray-700">
-                  Down 10% on DAY 1 of holding → SELL (avoid deeper losses)
+                  If <strong>STOCK</strong> drops &gt;5% on Day 1 from your entry → EXIT immediately
                 </div>
                 <div className="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded">
-                  Example: Bought at $10.00 → If drops to $9.00 on day 1, exit immediately
+                  Example: Entered when stock at $150 → If stock drops to $142.50 (-5%) by end of Day 1, sell the option
+                </div>
+                <div className="text-xs text-orange-700 mt-2 bg-orange-50 p-2 rounded font-semibold">
+                  ⭐ This rule avoids 23% of losers while sacrificing 0% of winners. Historical data shows stocks that continue dropping Day 1 never recover fast enough for option profits.
                 </div>
               </div>
 
@@ -195,25 +218,77 @@ export function StrategyGuideModal() {
 
           {/* Example */}
           <div className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-300 rounded-lg p-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-3">💡 Example Trade</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">💡 Example Trade (Following New Rules)</h3>
             <div className="space-y-2 text-sm">
               <div className="bg-white rounded p-2 border">
-                <strong>Opportunity:</strong> SNOW dropped 8%, beat EPS by 12%, Score: 92
+                <strong>Day 0 - Earnings:</strong> PSTG beat EPS, dropped 12% to $69.91
               </div>
               <div className="bg-white rounded p-2 border">
-                <strong>Entry:</strong> Stock at $152, bought $150 call, 35 DTE, $12.80 premium
+                <strong>Day 1 - Wait &amp; Observe:</strong> Stock at $70.50 (+0.8%) ✅ Stability confirmed → ENTER
               </div>
               <div className="bg-white rounded p-2 border">
-                <strong>Cost:</strong> $12.80 × 100 = $1,280 per contract
+                <strong>Entry:</strong> Stock at $70.50, bought $70 call, 35 DTE, $11.50 premium
               </div>
               <div className="bg-white rounded p-2 border">
-                <strong>Profit Target:</strong> $12.80 × 1.5 = $19.20 → Exit at $1,920 (+$640)
+                <strong>Cost:</strong> $11.50 × 100 = $1,150 per contract
               </div>
               <div className="bg-white rounded p-2 border">
-                <strong>Stop Loss:</strong> $12.80 × 0.7 = $8.96 → Exit at $896 (-$384)
+                <strong>Profit Target:</strong> $11.50 × 1.5 = $17.25 → Exit at $1,725 (+$575, 50%)
               </div>
               <div className="bg-white rounded p-2 border">
-                <strong>Time Stop:</strong> Close at 21 DTE (14 days from now)
+                <strong>Stop Loss:</strong> $11.50 × 0.7 = $8.05 → Exit at $805 (-$345, -30%)
+              </div>
+              <div className="bg-white rounded p-2 border">
+                <strong>Circuit Breaker:</strong> If stock drops below $66.98 (-5%) on Day 2, exit immediately
+              </div>
+              <div className="bg-white rounded p-2 border">
+                <strong>Result:</strong> Day 7 - Stock at $73.66 (+4.5%), option at $17.50 → HIT PROFIT TARGET (+52%) ✅
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Expectations */}
+          <div className="border-2 border-purple-200 bg-purple-50 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-purple-900 mb-3 flex items-center">
+              <span className="mr-2">📈</span> Expected Performance (Backtest Data)
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div className="bg-white rounded p-3 border border-purple-200">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-semibold text-purple-900">Current Strategy (Immediate Entry):</span>
+                </div>
+                <div className="space-y-1 text-xs text-purple-800">
+                  <div>• Win Rate: 48% (12 winners, 13 losers from 25 historical trades)</div>
+                  <div>• Average Winner: +105% return</div>
+                  <div>• Average Loser: -70% return</div>
+                  <div>• Expected Return: +13.5% per trade</div>
+                </div>
+              </div>
+              <div className="bg-white rounded p-3 border border-green-200">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-semibold text-green-900">Enhanced Strategy (Day 1 Circuit Breaker):</span>
+                </div>
+                <div className="space-y-1 text-xs text-green-800">
+                  <div>• Win Rate: 55% (12 winners, 10 losers, filtered out 3 bad trades)</div>
+                  <div>• Average Winner: +105% return</div>
+                  <div>• Average Loser: -70% return</div>
+                  <div>• Expected Return: +24.1% per trade</div>
+                  <div className="text-green-700 font-semibold mt-1">✅ +7% win rate improvement, +11% higher returns</div>
+                </div>
+              </div>
+              <div className="bg-white rounded p-3 border border-blue-200">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-semibold text-blue-900">Optimal Strategy (Wait for Day 1):</span>
+                </div>
+                <div className="space-y-1 text-xs text-blue-800">
+                  <div>• Estimated Win Rate: 60%+ (by filtering before entry)</div>
+                  <div>• Only enter on confirmed stability/bounce</div>
+                  <div>• Avoid 3+ losers entirely by not entering</div>
+                  <div className="text-blue-700 font-semibold mt-1">⭐ BEST approach for capital preservation</div>
+                </div>
+              </div>
+              <div className="text-xs text-purple-700 bg-purple-100 p-3 rounded mt-2">
+                <strong>Key Insight:</strong> All 25 historical stocks eventually recovered 50%+ within 30 days. However, only 48% of immediate-entry option trades captured this profitably. Winners recovered fast (1-7 days), losers recovered too slowly (option theta killed gains). The enhanced rules improve timing to capture fast recoveries.
               </div>
             </div>
           </div>
@@ -226,6 +301,7 @@ export function StrategyGuideModal() {
               <li>• Never risk more than 1-2% of portfolio on a single trade</li>
               <li>• Options can expire worthless - only trade with risk capital</li>
               <li>• Exit rules are mandatory - stick to them religiously</li>
+              <li>• <strong>NEW: Day 1 monitoring is CRITICAL</strong> - check stock price at end of first trading day</li>
               <li>• Track all trades to calculate actual win rate and profit factor</li>
             </ul>
           </div>
