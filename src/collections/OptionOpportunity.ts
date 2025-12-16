@@ -54,7 +54,7 @@ export const OptionOpportunity: CollectionConfig = {
       hooks: {
         beforeValidate: [
           ({ data, operation }) => {
-            if (operation === 'create' && !data?.opportunityId) {
+            if (operation === 'create' && data && !data.opportunityId) {
               return `${data.ticker}_${new Date(data.earningsDate).getTime()}`
             }
             return data?.opportunityId

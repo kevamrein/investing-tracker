@@ -52,12 +52,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const highScoreOpportunities = result.opportunities.filter(
+    const highScoreOpportunities = result.opportunities?.filter(
       (opp: any) => opp.score >= 85
-    )
+    ) || []
 
     console.log('Scan completed successfully:', {
-      totalOpportunities: result.opportunities.length,
+      totalOpportunities: result.opportunities?.length || 0,
       highScoreOpportunities: highScoreOpportunities.length,
       timestamp: new Date().toISOString(),
     })
@@ -70,11 +70,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       scan: {
-        totalOpportunities: result.opportunities.length,
+        totalOpportunities: result.opportunities?.length || 0,
         highScoreOpportunities: highScoreOpportunities.length,
-        opportunities: result.opportunities,
+        opportunities: result.opportunities || [],
       },
-      message: `Found ${result.opportunities.length} opportunities (${highScoreOpportunities.length} high-score)`,
+      message: `Found ${result.opportunities?.length || 0} opportunities (${highScoreOpportunities.length} high-score)`,
       timestamp: new Date().toISOString(),
     })
   } catch (error: any) {

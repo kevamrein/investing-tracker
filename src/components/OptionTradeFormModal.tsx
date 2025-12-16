@@ -71,7 +71,7 @@ export function OptionTradeFormModal({
       })
 
       if (result.success) {
-        setSuccess(`Trade entered! Total cost: $${result.totalCost.toFixed(2)}`)
+        setSuccess(`Trade entered! Total cost: $${result.totalCost?.toFixed(2) || 'N/A'}`)
         setTimeout(() => {
           onTradeCreated()
         }, 1500)

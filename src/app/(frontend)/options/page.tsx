@@ -97,11 +97,11 @@ async function StatsCards() {
   const highScoreCount = opportunities.success ? (opportunities.docs?.length || 0) : 0
   const openCount = trades.success ? (trades.docs?.length || 0) : 0
   const winRate =
-    performance.success && performance.metrics && performance.metrics.totalTrades > 0
+    performance.success && performance.metrics && performance.metrics.totalTrades > 0 && 'winRate' in performance.metrics
       ? performance.metrics.winRate
       : null
   const totalPnl =
-    performance.success && performance.metrics && performance.metrics.totalTrades > 0
+    performance.success && performance.metrics && performance.metrics.totalTrades > 0 && 'totalPnl' in performance.metrics
       ? performance.metrics.totalPnl
       : 0
 
@@ -125,7 +125,7 @@ async function StatsCards() {
     {
       title: 'Win Rate',
       value: winRate !== null ? `${winRate.toFixed(1)}%` : 'N/A',
-      subtitle: performance.success && performance.metrics && performance.metrics.totalTrades > 0
+      subtitle: performance.success && performance.metrics && performance.metrics.totalTrades > 0 && 'winRate' in performance.metrics
         ? `${performance.metrics.totalTrades} trades`
         : 'No trades yet',
       icon: BarChart3,
@@ -285,7 +285,7 @@ async function OpenPositionsCard() {
 async function PerformanceOverviewCard() {
   const result = await calculatePerformance()
 
-  if (!result.success || !result.metrics || result.metrics.totalTrades === 0) {
+  if (!result.success || !result.metrics || result.metrics.totalTrades === 0 || !('winRate' in result.metrics)) {
     return (
       <Card>
         <CardHeader>

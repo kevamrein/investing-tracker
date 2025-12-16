@@ -58,7 +58,9 @@ export async function createOptionTrade(params: CreateTradeParams) {
     // Create the trade
     const trade = await payload.create({
       collection: 'option-paper-trades',
+      draft: false,
       data: {
+        tradeId: `TRADE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         ticker: opportunity.ticker,
         investor: parseInt(session.user.id),
         opportunity: opportunity.id,

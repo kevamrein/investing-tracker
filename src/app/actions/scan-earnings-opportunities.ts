@@ -102,8 +102,10 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
               // Create new opportunity
               const created = await payload.create({
                 collection: 'option-opportunities',
+                draft: false,
                 data: {
                   ...opportunity,
+                  opportunityId: `${ticker}_${new Date(opportunity.earningsDate).getTime()}`,
                   investor: parseInt(session.user.id),
                   identifiedDate: new Date().toISOString(),
                   status: 'pending',
@@ -159,7 +161,7 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
     // Get quote data with earnings information
     const quote = await yahooFinance.quoteSummary(ticker, {
       modules: ['earnings', 'price', 'summaryDetail', 'defaultKeyStatistics', 'summaryProfile'],
-    })
+    }) as any
 
     // Get price history
     const endDate = new Date()
@@ -170,9 +172,9 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       period1: startDate,
       period2: endDate,
       interval: '1d',
-    })
+    }) as any[]
 
-    if (history.length < 5) return null // Need enough data
+    if (!history || history.length < 5) return null // Need enough data
 
     // Check for recent earnings
     const earningsData = quote.earnings?.earningsChart?.quarterly?.[0]
@@ -238,7 +240,7 @@ async function getUpcomingEarnings(ticker: string, daysAhead: number) {
   try {
     const quote = await yahooFinance.quoteSummary(ticker, {
       modules: ['calendarEvents', 'price', 'summaryProfile'],
-    })
+    }) as any
 
     const earningsDate = quote.calendarEvents?.earnings?.earningsDate?.[0]
     if (!earningsDate) return null
@@ -303,7 +305,7 @@ async function calculateOpportunityScore(params: {
       period2: new Date().toISOString().split('T')[0],
     })
 
-    const spyData = await spy
+    const spyData = (await spy) as any[]
     if (spyData && spyData.length >= 2) {
       const firstClose = spyData[0].close
       const lastClose = spyData[spyData.length - 1].close
@@ -330,7 +332,7 @@ async function calculateOpportunityScore(params: {
   return Math.min(score, 100)
 }
 
-function mapSector(yahooSector: string): string {
+function mapSector(yahooSector: string): 'technology' | 'communication' | 'healthcare' | 'financial' | 'consumer' | 'other' {
   const lower = yahooSector.toLowerCase()
 
   if (lower.includes('technology') || lower.includes('software') || lower.includes('computer')) {

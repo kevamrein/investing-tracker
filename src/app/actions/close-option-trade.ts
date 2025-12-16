@@ -40,6 +40,11 @@ export async function closeOptionTrade(params: CloseTradeParams) {
       return { success: false, message: `Can only close open positions. Current status: ${trade.status}` }
     }
 
+    // Validate trade has required fields
+    if (!trade.entryPremium || !trade.contracts) {
+      return { success: false, message: 'Trade missing required entry data' }
+    }
+
     // Validate inputs
     if (params.stockPrice <= 0 || params.exitPremium < 0) {
       return { success: false, message: 'Stock price and premium must be positive' }
