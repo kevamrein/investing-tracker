@@ -224,10 +224,7 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       sector: quote.summaryProfile?.sector || 'Other',
     })
 
-    // Calculate days since earnings and entry status
-    const daysSinceEarnings = Math.floor((endDate.getTime() - earningsDate.getTime()) / (1000 * 60 * 60 * 24))
-
-    // Calculate Day 1 price action (if available)
+    // Calculate Day 1 price action and entry status (daysSinceEarnings already calculated above)
     let day1Change = null
     let entryStatus = 'pending'
     let entryWindow = 'optimal' // optimal, late, expired
