@@ -73,6 +73,9 @@ export interface Config {
     investment: Investment;
     investmentRecommendation: InvestmentRecommendation;
     investors: Investor;
+    'option-opportunities': OptionOpportunity;
+    'option-paper-trades': OptionPaperTrade;
+    'option-alerts': OptionAlert;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +89,9 @@ export interface Config {
     investment: InvestmentSelect<false> | InvestmentSelect<true>;
     investmentRecommendation: InvestmentRecommendationSelect<false> | InvestmentRecommendationSelect<true>;
     investors: InvestorsSelect<false> | InvestorsSelect<true>;
+    'option-opportunities': OptionOpportunitiesSelect<false> | OptionOpportunitiesSelect<true>;
+    'option-paper-trades': OptionPaperTradesSelect<false> | OptionPaperTradesSelect<true>;
+    'option-alerts': OptionAlertsSelect<false> | OptionAlertsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -248,6 +254,237 @@ export interface InvestmentRecommendation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "option-opportunities".
+ */
+export interface OptionOpportunity {
+  id: number;
+  opportunityId: string;
+  /**
+   * Stock ticker symbol (e.g., SNOW, OKTA, ZS)
+   */
+  ticker: string;
+  /**
+   * Full company name
+   */
+  companyName?: string | null;
+  /**
+   * Investor who owns this opportunity
+   */
+  investor: number | Investor;
+  /**
+   * Date of earnings announcement
+   */
+  earningsDate: string;
+  /**
+   * When this opportunity was found by scanner
+   */
+  identifiedDate: string;
+  /**
+   * Post-earnings price drop percentage (e.g., -14.7)
+   */
+  dropPct: number;
+  /**
+   * How much earnings beat estimates (e.g., +12.5)
+   */
+  epsBeatPct: number;
+  /**
+   * Composite score (0-100). 85+ = Strong trade signal, 70-84 = Consider
+   */
+  score: number;
+  /**
+   * Stock price before earnings
+   */
+  preEarningsPrice?: number | null;
+  /**
+   * Stock price after earnings drop
+   */
+  postEarningsPrice?: number | null;
+  /**
+   * Latest stock price
+   */
+  currentPrice?: number | null;
+  /**
+   * Market capitalization in dollars
+   */
+  marketCap?: number | null;
+  /**
+   * Stock sector (Tech preferred for this strategy)
+   */
+  sector?: ('technology' | 'communication' | 'healthcare' | 'financial' | 'consumer' | 'other') | null;
+  /**
+   * Opportunity lifecycle status
+   */
+  status: 'pending' | 'traded' | 'dismissed' | 'expired';
+  /**
+   * Trading strategy name
+   */
+  strategy?: string | null;
+  /**
+   * Additional notes or observations
+   */
+  notes?: string | null;
+  displayTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "option-paper-trades".
+ */
+export interface OptionPaperTrade {
+  id: number;
+  tradeId: string;
+  /**
+   * Stock ticker symbol
+   */
+  ticker: string;
+  /**
+   * Investor who owns this trade
+   */
+  investor: number | Investor;
+  /**
+   * Link to the opportunity that triggered this trade
+   */
+  opportunity?: (number | null) | OptionOpportunity;
+  /**
+   * Original earnings date
+   */
+  earningsDate: string;
+  /**
+   * When opportunity was identified
+   */
+  identifiedDate: string;
+  /**
+   * Post-earnings price drop %
+   */
+  dropPct: number;
+  /**
+   * EPS beat magnitude %
+   */
+  epsBeatPct: number;
+  /**
+   * Original opportunity score (0-100)
+   */
+  score: number;
+  /**
+   * When position was entered
+   */
+  entryDate?: string | null;
+  /**
+   * Stock price when entering position
+   */
+  stockPriceAtEntry?: number | null;
+  /**
+   * ATM strike price of call option
+   */
+  strikePrice?: number | null;
+  /**
+   * Premium paid per contract (e.g., $3.80)
+   */
+  entryPremium?: number | null;
+  /**
+   * Number of option contracts (each = 100 shares)
+   */
+  contracts: number;
+  /**
+   * Days to expiration when entered (typically 30-45)
+   */
+  dteAtEntry?: number | null;
+  /**
+   * When position was closed
+   */
+  exitDate?: string | null;
+  /**
+   * Stock price when closing position
+   */
+  stockPriceAtExit?: number | null;
+  /**
+   * Premium received per contract when selling
+   */
+  exitPremium?: number | null;
+  /**
+   * Why was this position closed?
+   */
+  exitReason?: ('profit_target' | 'stop_loss' | 'time_stop' | 'day1_circuit_breaker' | 'manual') | null;
+  /**
+   * Current position status
+   */
+  status: 'pending' | 'open' | 'closed' | 'cancelled';
+  /**
+   * Percentage of account allocated (e.g., 2.0 = 2%)
+   */
+  positionSizePct?: number | null;
+  /**
+   * Calculated: (exitPremium - entryPremium) * contracts * 100
+   */
+  pnlDollars?: number | null;
+  /**
+   * Calculated: ((exitPremium - entryPremium) / entryPremium) * 100
+   */
+  pnlPercent?: number | null;
+  /**
+   * Days between entry and exit
+   */
+  holdingDays?: number | null;
+  /**
+   * Trading strategy name
+   */
+  strategy?: string | null;
+  /**
+   * Trade notes and observations
+   */
+  notes?: string | null;
+  displayTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "option-alerts".
+ */
+export interface OptionAlert {
+  id: number;
+  /**
+   * Investor who owns this alert configuration
+   */
+  investor: number | Investor;
+  /**
+   * Type of event that triggers this alert
+   */
+  alertType: 'new_opportunity' | 'profit_target' | 'stop_loss' | 'position_update' | 'daily_summary';
+  /**
+   * Only alert on opportunities with score >= this value (for new_opportunity alerts)
+   */
+  minScore?: number | null;
+  /**
+   * How to deliver this alert (can select multiple)
+   */
+  deliveryMethods: {
+    method: 'email' | 'in_app';
+    id?: string | null;
+  }[];
+  /**
+   * Email address for delivery (only shown if Email is selected)
+   */
+  emailAddress?: string | null;
+  /**
+   * Turn this alert on or off
+   */
+  enabled?: boolean | null;
+  /**
+   * Last time this alert was sent
+   */
+  lastTriggered?: string | null;
+  /**
+   * Number of times this alert has been triggered
+   */
+  triggerCount?: number | null;
+  displayTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -293,6 +530,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'investors';
         value: number | Investor;
+      } | null)
+    | ({
+        relationTo: 'option-opportunities';
+        value: number | OptionOpportunity;
+      } | null)
+    | ({
+        relationTo: 'option-paper-trades';
+        value: number | OptionPaperTrade;
+      } | null)
+    | ({
+        relationTo: 'option-alerts';
+        value: number | OptionAlert;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -449,6 +698,89 @@ export interface InvestorsSelect<T extends boolean = true> {
   lastName?: T;
   password?: T;
   investableAssets?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "option-opportunities_select".
+ */
+export interface OptionOpportunitiesSelect<T extends boolean = true> {
+  opportunityId?: T;
+  ticker?: T;
+  companyName?: T;
+  investor?: T;
+  earningsDate?: T;
+  identifiedDate?: T;
+  dropPct?: T;
+  epsBeatPct?: T;
+  score?: T;
+  preEarningsPrice?: T;
+  postEarningsPrice?: T;
+  currentPrice?: T;
+  marketCap?: T;
+  sector?: T;
+  status?: T;
+  strategy?: T;
+  notes?: T;
+  displayTitle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "option-paper-trades_select".
+ */
+export interface OptionPaperTradesSelect<T extends boolean = true> {
+  tradeId?: T;
+  ticker?: T;
+  investor?: T;
+  opportunity?: T;
+  earningsDate?: T;
+  identifiedDate?: T;
+  dropPct?: T;
+  epsBeatPct?: T;
+  score?: T;
+  entryDate?: T;
+  stockPriceAtEntry?: T;
+  strikePrice?: T;
+  entryPremium?: T;
+  contracts?: T;
+  dteAtEntry?: T;
+  exitDate?: T;
+  stockPriceAtExit?: T;
+  exitPremium?: T;
+  exitReason?: T;
+  status?: T;
+  positionSizePct?: T;
+  pnlDollars?: T;
+  pnlPercent?: T;
+  holdingDays?: T;
+  strategy?: T;
+  notes?: T;
+  displayTitle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "option-alerts_select".
+ */
+export interface OptionAlertsSelect<T extends boolean = true> {
+  investor?: T;
+  alertType?: T;
+  minScore?: T;
+  deliveryMethods?:
+    | T
+    | {
+        method?: T;
+        id?: T;
+      };
+  emailAddress?: T;
+  enabled?: T;
+  lastTriggered?: T;
+  triggerCount?: T;
+  displayTitle?: T;
   updatedAt?: T;
   createdAt?: T;
 }

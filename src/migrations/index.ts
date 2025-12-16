@@ -3,6 +3,7 @@ import * as migration_20250529_115021_investor_on_investment from './20250529_11
 import * as migration_20251002_233302_add_account_type from './20251002_233302_add_account_type';
 import * as migration_20251107_030056_investable_assets from './20251107_030056_investable_assets';
 import * as migration_20251113_192533_company_notes from './20251113_192533_company_notes';
+import * as migration_20251216_040612_options from './20251216_040612_options';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20251113_192533_company_notes.up,
     down: migration_20251113_192533_company_notes.down,
-    name: '20251113_192533_company_notes'
+    name: '20251113_192533_company_notes',
+  },
+  {
+    up: migration_20251216_040612_options.up,
+    down: migration_20251216_040612_options.down,
+    name: '20251216_040612_options'
   },
 ];
