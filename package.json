@@ -35,6 +35,7 @@
     "react": "19.0.1",
     "react-dom": "19.0.1",
     "react-markdown": "^10.1.0",
+    "recharts": "^2.15.0",
     "sharp": "0.34.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
