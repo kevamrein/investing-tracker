@@ -60,8 +60,8 @@ const TICKER_UNIVERSE = [
 
 interface ScanOptions {
   mode: 'upcoming' | 'recent'
-  daysAhead?: number
-  daysBack?: number
+  daysAhead?: number  // For upcoming: look forward (default: 14 days)
+  daysBack?: number   // For recent: look backward (default: 3 days - optimal entry window)
   minScore?: number
 }
 
@@ -77,7 +77,8 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
 
     if (options.mode === 'recent') {
       // Scan for post-earnings opportunities (beat + drop pattern)
-      const daysBack = options.daysBack || 7
+      // Default 3 days: Day 0 (earnings) + Day 1 (wait) + Day 2 (enter) = 3 day window
+      const daysBack = options.daysBack || 3
 
       console.log(`Scanning ${TICKER_UNIVERSE.length} tickers for recent opportunities (last ${daysBack} days)...`)
 
@@ -86,6 +87,12 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
           const opportunity = await checkPostEarningsOpportunity(ticker, daysBack)
 
           if (opportunity && opportunity.score >= (options.minScore || 70)) {
+            // Skip if entry window expired (>5 days old)
+            if (opportunity.entryWindow === 'expired') {
+              console.log(`⏭️  Skipping ${ticker}: Entry window expired (${opportunity.daysSinceEarnings} days old)`)
+              continue
+            }
+
             // Check if already exists
             const existing = await payload.find({
               collection: 'option-opportunities',
@@ -123,8 +130,8 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
         }
       }
     } else if (options.mode === 'upcoming') {
-      // Scan for upcoming earnings dates
-      const daysAhead = options.daysAhead || 30
+      // Scan for upcoming earnings dates (build watchlist)
+      const daysAhead = options.daysAhead || 14
 
       console.log(`Scanning ${TICKER_UNIVERSE.length} tickers for upcoming earnings (next ${daysAhead} days)...`)
 
@@ -217,6 +224,42 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       sector: quote.summaryProfile?.sector || 'Other',
     })
 
+    // Calculate Day 1 price action and entry status (daysSinceEarnings already calculated above)
+    let day1Change = null
+    let entryStatus = 'pending'
+    let entryWindow = 'optimal' // optimal, late, expired
+
+    if (daysSinceEarnings >= 1) {
+      // Check Day 1 price action
+      const day1Prices = postPrices.filter(h => {
+        const daysSince = Math.floor((new Date(h.date).getTime() - earningsDate.getTime()) / (1000 * 60 * 60 * 24))
+        return daysSince === 1
+      })
+
+      if (day1Prices.length > 0) {
+        const day1Price = day1Prices[0].close
+        day1Change = ((day1Price - postPrice) / postPrice) * 100
+
+        // Apply Day 1 filter rule
+        if (day1Change < -5.0) {
+          entryStatus = 'skip' // Stock continued dropping >5% on Day 1
+        } else {
+          entryStatus = 'ready' // Stock was stable/bounced
+        }
+      }
+    }
+
+    // Determine entry window
+    if (daysSinceEarnings === 0) {
+      entryWindow = 'wait_day1' // Wait for Day 1 close
+    } else if (daysSinceEarnings <= 3) {
+      entryWindow = 'optimal' // Best entry window (Day 1-3)
+    } else if (daysSinceEarnings <= 5) {
+      entryWindow = 'late' // Can still enter but theta decay starting
+    } else {
+      entryWindow = 'expired' // Too late, skip
+    }
+
     return {
       ticker,
       companyName: quote.price?.shortName || ticker,
@@ -229,6 +272,10 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       currentPrice: quote.price?.regularMarketPrice || postPrice,
       marketCap: quote.price?.marketCap,
       sector: mapSector(quote.summaryProfile?.sector || 'Other'),
+      daysSinceEarnings,
+      day1Change,
+      entryStatus, // 'pending', 'ready', 'skip'
+      entryWindow, // 'wait_day1', 'optimal', 'late', 'expired'
     }
   } catch (error) {
     // Silent fail - ticker might not have data

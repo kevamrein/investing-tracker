@@ -47,7 +47,7 @@ export default function ScannerPage() {
     fetchOpportunities()
   }, [fetchOpportunities])
 
-  const handleScan = async () => {
+  const handleScan = async (mode: 'recent' | 'upcoming') => {
     setIsScanning(true)
     setScanResult('')
 
@@ -58,8 +58,9 @@ export default function ScannerPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mode: 'recent',
-          daysBack: 7,
+          mode,
+          daysBack: mode === 'recent' ? 3 : undefined, // 3 days for optimal entry window
+          daysAhead: mode === 'upcoming' ? 14 : undefined, // 14 days for watchlist
           minScore: 70,
         }),
       })
@@ -67,9 +68,15 @@ export default function ScannerPage() {
       const data = await response.json()
 
       if (data.success) {
-        setScanResult(
-          `Scan complete! Found ${data.opportunities.length} opportunities (${data.opportunities.filter((o: any) => o.score >= 85).length} high-score)`
-        )
+        if (mode === 'recent') {
+          setScanResult(
+            `Recent scan complete! Found ${data.opportunities.length} opportunities (${data.opportunities.filter((o: any) => o.score >= 85).length} high-score)`
+          )
+        } else {
+          setScanResult(
+            `Upcoming earnings scan complete! Found ${data.opportunities.length} companies reporting in next 2 weeks`
+          )
+        }
         fetchOpportunities()
       } else {
         setScanResult(`Scan failed: ${data.message}`)
@@ -103,7 +110,7 @@ export default function ScannerPage() {
         </div>
         <div className="flex gap-3">
           <StrategyGuideModal />
-          <Button onClick={handleScan} disabled={isScanning} size="lg">
+          <Button onClick={() => handleScan('upcoming')} disabled={isScanning} size="lg" variant="outline">
             {isScanning ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -112,7 +119,20 @@ export default function ScannerPage() {
             ) : (
               <>
                 <TrendingUp className="mr-2 h-5 w-5" />
-                Run Scanner
+                Upcoming (14d)
+              </>
+            )}
+          </Button>
+          <Button onClick={() => handleScan('recent')} disabled={isScanning} size="lg">
+            {isScanning ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Scanning...
+              </>
+            ) : (
+              <>
+                <TrendingUp className="mr-2 h-5 w-5" />
+                Recent (3d)
               </>
             )}
           </Button>
@@ -221,19 +241,34 @@ export default function ScannerPage() {
             <p className="text-gray-600 mb-6">
               Run the scanner to find new earnings beat + drop opportunities
             </p>
-            <Button onClick={handleScan} disabled={isScanning}>
-              {isScanning ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Scanning...
-                </>
-              ) : (
-                <>
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  Run Scanner
-                </>
-              )}
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => handleScan('upcoming')} disabled={isScanning} variant="outline">
+                {isScanning ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Scanning...
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    Scan Upcoming (14d)
+                  </>
+                )}
+              </Button>
+              <Button onClick={() => handleScan('recent')} disabled={isScanning}>
+                {isScanning ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Scanning...
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    Scan Recent (3d)
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

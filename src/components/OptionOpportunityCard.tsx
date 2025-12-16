@@ -114,25 +114,99 @@ export function OptionOpportunityCard({ opportunity, onTradeCreated }: OptionOpp
             {signal.emoji} {signal.text}
           </div>
 
-          {/* Day 1 Waiting Period Reminder */}
+          {/* Entry Timing and Day 1 Status */}
           {opportunity.status === 'pending' && opportunity.score >= 70 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
-              <div className="font-semibold text-blue-900 mb-1">⭐ Best Practice:</div>
-              <div className="text-blue-800">
-                Wait until Day 1 close to confirm stock stability. Only enter if stock is flat or up from post-earnings price. Skip if stock drops &gt;5% on Day 1.
-              </div>
-            </div>
+            <>
+              {/* Entry Window Status */}
+              {opportunity.entryWindow === 'wait_day1' && (
+                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 text-xs">
+                  <div className="font-semibold text-yellow-900 mb-1">⏳ WAIT FOR DAY 1 CLOSE</div>
+                  <div className="text-yellow-800">
+                    Earnings just reported. Monitor stock price today and check again after market close to see if it stabilized or continued dropping.
+                  </div>
+                </div>
+              )}
+
+              {opportunity.entryStatus === 'ready' && opportunity.entryWindow === 'optimal' && (
+                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-3 text-xs">
+                  <div className="font-semibold text-green-900 mb-1">✅ READY TO TRADE (Day {opportunity.daysSinceEarnings})</div>
+                  <div className="text-green-800 space-y-1">
+                    <div>Day 1 Change: <strong>{opportunity.day1Change?.toFixed(2)}%</strong> (stable ✅)</div>
+                    <div>Stock passed Day 1 stability check. Optimal entry window is NOW (Day 1-3).</div>
+                  </div>
+                </div>
+              )}
+
+              {opportunity.entryStatus === 'skip' && (
+                <div className="bg-red-50 border-2 border-red-300 rounded-lg p-3 text-xs">
+                  <div className="font-semibold text-red-900 mb-1">❌ SKIP THIS TRADE</div>
+                  <div className="text-red-800 space-y-1">
+                    <div>Day 1 Change: <strong>{opportunity.day1Change?.toFixed(2)}%</strong> (dropped &gt;5% ❌)</div>
+                    <div>Stock continued dropping on Day 1. Historical data shows 0% win rate for these setups. Skip and wait for next opportunity.</div>
+                  </div>
+                </div>
+              )}
+
+              {opportunity.entryWindow === 'late' && opportunity.entryStatus === 'ready' && (
+                <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-3 text-xs">
+                  <div className="font-semibold text-orange-900 mb-1">⚠️ LATE ENTRY (Day {opportunity.daysSinceEarnings})</div>
+                  <div className="text-orange-800">
+                    Day 1 was stable but you&apos;re entering late. Theta decay is already working against you. Consider skipping and waiting for fresher opportunities.
+                  </div>
+                </div>
+              )}
+
+              {/* General Best Practice (for upcoming or pending Day 1) */}
+              {!opportunity.entryWindow && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
+                  <div className="font-semibold text-blue-900 mb-1">⭐ Best Practice:</div>
+                  <div className="text-blue-800">
+                    Wait until Day 1 close to confirm stock stability. Only enter if stock is flat or up from post-earnings price. Skip if stock drops &gt;5% on Day 1.
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Action Button */}
           {opportunity.status === 'pending' && opportunity.score >= 70 && (
-            <Button
-              onClick={() => setShowTradeModal(true)}
-              className="w-full h-12 text-lg"
-              size="lg"
-            >
-              Enter Paper Trade
-            </Button>
+            <>
+              {/* Only show trade button if ready to trade */}
+              {(opportunity.entryStatus === 'ready' || !opportunity.entryStatus) && opportunity.entryStatus !== 'skip' && (
+                <Button
+                  onClick={() => setShowTradeModal(true)}
+                  className="w-full h-12 text-lg"
+                  size="lg"
+                  variant={opportunity.entryWindow === 'late' ? 'outline' : 'default'}
+                >
+                  {opportunity.entryWindow === 'late' ? 'Enter Trade (Late Entry)' : 'Enter Paper Trade'}
+                </Button>
+              )}
+
+              {/* Disabled button for skip status */}
+              {opportunity.entryStatus === 'skip' && (
+                <Button
+                  disabled
+                  className="w-full h-12 text-lg"
+                  size="lg"
+                  variant="outline"
+                >
+                  Skip This Trade (Day 1 Failed)
+                </Button>
+              )}
+
+              {/* Waiting for Day 1 button */}
+              {opportunity.entryWindow === 'wait_day1' && (
+                <Button
+                  disabled
+                  className="w-full h-12 text-lg"
+                  size="lg"
+                  variant="outline"
+                >
+                  ⏳ Waiting for Day 1 Close
+                </Button>
+              )}
+            </>
           )}
 
           {opportunity.status === 'traded' && (
