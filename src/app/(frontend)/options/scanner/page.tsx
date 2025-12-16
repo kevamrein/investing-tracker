@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { OptionOpportunityCard } from '@/components/OptionOpportunityCard'
@@ -17,11 +17,7 @@ export default function ScannerPage() {
   })
   const [scanResult, setScanResult] = useState<string>('')
 
-  useEffect(() => {
-    fetchOpportunities()
-  }, [filters])
-
-  const fetchOpportunities = async () => {
+  const fetchOpportunities = useCallback(async () => {
     setIsLoading(true)
     try {
       const queryParams = new URLSearchParams()
@@ -45,7 +41,11 @@ export default function ScannerPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [filters])
+
+  useEffect(() => {
+    fetchOpportunities()
+  }, [fetchOpportunities])
 
   const handleScan = async () => {
     setIsScanning(true)

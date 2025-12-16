@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { OptionPositionCard } from '@/components/OptionPositionCard'
@@ -14,11 +14,7 @@ export default function TradesPage() {
     ticker: '',
   })
 
-  useEffect(() => {
-    fetchTrades()
-  }, [filters])
-
-  const fetchTrades = async () => {
+  const fetchTrades = useCallback(async () => {
     setIsLoading(true)
     try {
       const queryParams = new URLSearchParams()
@@ -42,7 +38,11 @@ export default function TradesPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [filters])
+
+  useEffect(() => {
+    fetchTrades()
+  }, [fetchTrades])
 
   const openTrades = trades.filter((t) => t.status === 'open')
   const closedTrades = trades.filter((t) => t.status === 'closed')

@@ -73,7 +73,7 @@ export function CompanySidebar({ initialCompanies }: { initialCompanies: Company
     } finally {
       setIsLoading(false)
     }
-  }, [page, hasMore, debouncedSearchTerm])
+  }, [page, hasMore, debouncedSearchTerm, isLoading])
 
   useEffect(() => {
     const observer = new IntersectionObserver(

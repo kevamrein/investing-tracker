@@ -79,7 +79,7 @@ export function StrategyGuideModal() {
               <div className="bg-white rounded p-3 border border-green-200">
                 <div className="font-semibold text-green-900 mb-2">Premium:</div>
                 <div className="text-green-800">
-                  Pay the <strong>market ASK price</strong> (check your broker's option chain)
+                  Pay the <strong>market ASK price</strong> (check your broker&apos;s option chain)
                 </div>
               </div>
               <div className="bg-white rounded p-3 border border-green-200">
