@@ -1,12 +1,12 @@
 {
     "crons": [
         {
-            "path": "/api/update-stock-data",
+            "path": "/api/cron/weekly-updates",
             "schedule": "0 21 * * 5"
         },
         {
-            "path": "/api/update-investment-recommendations",
-            "schedule": "0 22 * * 5"
+            "path": "/api/cron/scan-opportunities",
+            "schedule": "0 7 * * *"
         }
     ]
 }

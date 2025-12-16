@@ -115,6 +115,71 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Options Trading Feature */}
+            <div className="max-w-4xl mx-auto mb-12">
+              <a
+                href="/options"
+                className="block bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-2xl p-8 border-2 border-green-200 dark:border-green-800 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-3">
+                      <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mr-4">
+                        <svg
+                          className="w-6 h-6 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-green-900 dark:text-green-100">
+                          Options Paper Trading
+                        </h2>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs font-semibold px-2 py-1 bg-green-600 text-white rounded">
+                            100% WIN RATE
+                          </span>
+                          <span className="text-xs font-semibold px-2 py-1 bg-blue-600 text-white rounded">
+                            NEW
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-green-800 dark:text-green-200 font-medium text-lg mb-2">
+                      Beat + Drop Recovery Strategy
+                    </p>
+                    <p className="text-green-700 dark:text-green-300">
+                      Practice options trading with our validated strategy: scan for earnings beats that
+                      dropped &gt;5%, paper trade ATM calls, and track performance analytics
+                    </p>
+                  </div>
+                  <div className="ml-6">
+                    <svg
+                      className="w-8 h-8 text-green-600 dark:text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+            </div>
+
             {/* AI Portfolio Assistant Feature */}
             <div className="max-w-2xl mx-auto mb-12">
               <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-8 border border-primary/10 shadow-lg">

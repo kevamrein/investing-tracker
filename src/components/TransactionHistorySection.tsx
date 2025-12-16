@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { AddInvestmentModal } from '@/components/AddInvestmentModal'
@@ -26,7 +26,7 @@ export function TransactionHistorySection({
   const [transactions, setTransactions] = useState<Transaction[]>(transactionHistory)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       console.log('Fetching transactions for companyId:', companyId)
       const response = await fetch(`/api/transactions/${companyId}`)
@@ -41,11 +41,11 @@ export function TransactionHistorySection({
     } catch (error) {
       console.error('Error fetching transactions:', error)
     }
-  }
+  }, [companyId])
 
   useEffect(() => {
     fetchTransactions()
-  }, [companyId])
+  }, [fetchTransactions])
 
   const handleInvestmentAdded = () => {
     console.log('Investment added, fetching transactions...')

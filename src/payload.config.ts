@@ -13,6 +13,9 @@ import { Company } from './collections/Company'
 import { Investment } from './collections/Investment'
 import { InvestmentRecommendation } from './collections/InvestmentRecommendation'
 import { Investor } from './collections/Investor'
+import { OptionOpportunity } from './collections/OptionOpportunity'
+import { OptionPaperTrade } from './collections/OptionPaperTrade'
+import { OptionAlert } from './collections/OptionAlert'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,7 +27,17 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Company, Investment, InvestmentRecommendation, Investor],
+  collections: [
+    Users,
+    Media,
+    Company,
+    Investment,
+    InvestmentRecommendation,
+    Investor,
+    OptionOpportunity,
+    OptionPaperTrade,
+    OptionAlert,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
