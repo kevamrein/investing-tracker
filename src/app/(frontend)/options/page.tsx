@@ -23,7 +23,7 @@ export default async function OptionsPage() {
         <div>
           <h1 className="text-4xl font-bold">Options Paper Trading</h1>
           <p className="text-gray-600 mt-1">
-            Beat + Drop Recovery Strategy - 100% Historical Win Rate
+            Beat + Drop Recovery Strategy - Backtest Validated
           </p>
         </div>
         <div className="flex gap-3">

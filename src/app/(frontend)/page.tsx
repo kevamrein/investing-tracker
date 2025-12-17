@@ -143,14 +143,6 @@ export default function HomePage() {
                         <h2 className="text-2xl font-bold text-green-900 dark:text-green-100">
                           Options Paper Trading
                         </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-semibold px-2 py-1 bg-green-600 text-white rounded">
-                            100% WIN RATE
-                          </span>
-                          <span className="text-xs font-semibold px-2 py-1 bg-blue-600 text-white rounded">
-                            NEW
-                          </span>
-                        </div>
                       </div>
                     </div>
                     <p className="text-green-800 dark:text-green-200 font-medium text-lg mb-2">

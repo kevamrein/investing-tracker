@@ -57,12 +57,12 @@ export function StrategyGuideModal() {
                 <div className="font-semibold text-blue-900 mb-2">🎯 Drop Size Sweet Spot:</div>
                 <div className="space-y-1 text-xs">
                   <div>• <strong>10-15% drops:</strong> 60% win rate (BEST) ⭐</div>
-                  <div>• <strong>&lt;10% drops:</strong> 100% win rate (small sample)</div>
+                  <div>• <strong>&lt;10% drops:</strong> Strong performance (limited data)</div>
                   <div>• <strong>15-25% drops:</strong> 38% win rate (risky)</div>
                   <div>• <strong>&gt;25% drops:</strong> 25% win rate (avoid)</div>
                 </div>
                 <div className="text-xs text-blue-700 mt-2 bg-blue-100 p-2 rounded">
-                  <strong>Insight:</strong> Bigger drops don&apos;t mean better opportunities. Focus on 10-15% drops for highest success rate.
+                  <strong>Insight:</strong> Bigger drops don&apos;t mean better opportunities. Focus on 10-15% drops for best results.
                 </div>
               </div>
             </div>

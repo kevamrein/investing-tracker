@@ -319,7 +319,7 @@ async function calculateOpportunityScore(params: {
   let score = 0
 
   // Drop Size (30 points) - Based on backtest data showing 10-15% drops have best win rate
-  // Research: 10-15% drops = 60% win rate, <10% = 100% (small sample), 15-25% = 38%, >25% = 25%
+  // Research: 10-15% drops = 60% win rate, <10% = strong (limited sample), 15-25% = 38%, >25% = 25%
   const absDropPct = Math.abs(params.dropPct)
   if (absDropPct >= 10 && absDropPct <= 15) {
     score += 30 // Sweet spot: 10-15% drops (60% win rate)
