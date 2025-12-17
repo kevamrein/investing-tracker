@@ -5,7 +5,8 @@ import { getPayload } from 'payload'
 import getSession from './auth-utils'
 import yahooFinance from 'yahoo-finance2'
 
-// Ticker universe (from Python scanner - 103 tech stocks)
+// Ticker universe - 106 stocks (103 tech + 3 consumer cyclical)
+// Expanded based on sector backtest analysis (Dec 2024)
 const TICKER_UNIVERSE = [
   // Mega Cap Tech
   "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "META", "NVDA", "TSLA", "AMD", "INTC",
@@ -56,6 +57,9 @@ const TICKER_UNIVERSE = [
 
   // Semiconductor Equipment
   "MPWR",
+
+  // Consumer Cyclical (high-growth, tech-like volatility)
+  "NKE", "BKNG", "ETSY",
 ]
 
 interface ScanOptions {
