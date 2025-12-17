@@ -1,0 +1,139 @@
+'use server'
+
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import config from '@payload-config'
+import { sql } from '@payloadcms/db-postgres/drizzle'
+import { getPayload } from 'payload'
+
+export async function getSystemPrompt(): Promise<string> {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized')
+  }
+
+  const investorId = session.user.id
+  const payload = await getPayload({ config })
+
+  // Get the investor's investable assets
+  const investor = await payload.findByID({
+    collection: 'investors',
+    id: investorId,
+  })
+
+  // Get all companies in the system
+  const allCompanies = await payload.find({
+    collection: 'company',
+    sort: 'name',
+    limit: 1000,
+  })
+
+  // Get net shares per company and account type using SQL
+  const netSharesResult = await payload.db.drizzle.execute(sql`
+    SELECT company_id as company, account_type, SUM(CASE WHEN transaction_type = 'buy' THEN shares ELSE -shares END) as net_shares
+    FROM investment
+    WHERE investor_mapping_id = ${investorId}
+    GROUP BY company_id, account_type
+    HAVING SUM(CASE WHEN transaction_type = 'buy' THEN shares ELSE -shares END) > 0
+  `)
+
+  // Build holdings and transactions context
+  const holdings = []
+
+  for (const row of netSharesResult.rows as any[]) {
+    const companyId = row.company as string
+    const accountType = row.account_type as string
+    const netShares = row.net_shares as number
+
+    // Get company details
+    const company = await payload.findByID({
+      collection: 'company',
+      id: companyId,
+    })
+
+    // Get all transactions for this holding
+    const transactions = await payload.find({
+      collection: 'investment',
+      where: {
+        company: {
+          equals: companyId,
+        },
+        investorMapping: {
+          equals: investorId,
+        },
+        accountType: {
+          equals: accountType,
+        },
+      },
+      sort: 'investmentDate',
+    })
+
+    const transactionList = transactions.docs.map((txn) => ({
+      type: txn.transactionType,
+      shares: txn.shares,
+      price: txn.pricePerShare,
+      date: txn.investmentDate,
+      total: txn.shares * txn.pricePerShare,
+    }))
+
+    if (company) {
+      holdings.push({
+        companyName: company.name,
+        ticker: company.ticker,
+        accountType: accountType,
+        shares: netShares,
+        transactions: transactionList,
+      })
+    }
+  }
+
+  // Calculate total investable assets
+  const totalInvestableAssets =
+    investor && typeof investor.investableAssets === 'number' ? investor.investableAssets : 0
+
+  // Build the prompt with ALL companies in the system
+  let prompt = `**INVESTOR TRACKING SYSTEM CONTEXT**
+
+**Goal:** You are an expert financial analyst providing insights about an investor tracking system. The primary goal is to achieve outsized returns through active stock picking and trading with a higher risk/higher reward strategy. Assume that basic ETFs and diversified index funds are owned in a separate fund/account and are not part of this portfolio - this portfolio is specifically for higher-risk opportunities aimed at generating alpha. You have access to all companies in the system and the user's complete transaction history. Provide helpful answers about the system, companies, and user's investment patterns. Use live search to get current stock prices and any other market data you need. Calculate the exact cost basis for each holding using the provided transaction data (FIFO method). Determine the remaining investable assets by subtracting the total cost basis from the total investable assets. When considering investment opportunities, remember that the investor can sell existing shares to raise additional cash beyond their current investable assets, and factor in tax implications of selling based on cost basis and holding periods.
+
+**ALL COMPANIES IN THE SYSTEM:**
+`
+
+  // List all companies in the database
+  allCompanies.docs.forEach((company) => {
+    prompt += `\n- ${company.name} (${company.ticker})`
+  })
+
+  prompt += `\n\n**USER'S CURRENT HOLDINGS:**
+`
+
+  if (holdings.length > 0) {
+    holdings.forEach((holding) => {
+      prompt += `\n- **${holding.companyName} (${holding.ticker})**: ${holding.shares} shares in ${holding.accountType} account`
+    })
+
+    prompt += `\n\n**USER'S TRANSACTION HISTORY:**
+`
+
+    holdings.forEach((holding) => {
+      prompt += `\n**${holding.companyName} (${holding.ticker}) - ${holding.accountType} Account:**
+`
+      holding.transactions.forEach((txn) => {
+        prompt += `- ${txn.type.toUpperCase()}: ${txn.shares} shares at $${txn.price.toFixed(2)} each on ${new Date(txn.date).toLocaleDateString()} (Total: $${txn.total.toFixed(2)})
+`
+      })
+    })
+  } else {
+    prompt += `\nNo current holdings.
+
+**USER'S TRANSACTION HISTORY:**
+No transactions yet.
+`
+  }
+
+  prompt += `\n**TOTAL INVESTABLE ASSETS:** $${totalInvestableAssets.toFixed(2)}
+
+Use this context to answer questions about the system, compare companies, analyze the user's portfolio in relation to other companies in the database, and provide investment insights.`
+
+  return prompt
+}
