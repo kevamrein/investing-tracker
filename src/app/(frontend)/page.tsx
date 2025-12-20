@@ -1,5 +1,5 @@
 import { Header } from './components/Header'
-import { RecentMoversWrapper } from './components/RecentMoversWrapper'
+import { YourPositionsWrapper } from './components/YourPositionsWrapper'
 import { CompanySidebarWrapper } from './components/CompanySidebarWrapper'
 import { AskPortfolioQuestionModal } from '@/components/AskPortfolioQuestionModal'
 import { AskSystemQuestionModal } from '@/components/AskSystemQuestionModal'
@@ -209,7 +209,7 @@ export default function HomePage() {
             </div>
 
             <div className="max-w-4xl mx-auto">
-              <RecentMoversWrapper />
+              <YourPositionsWrapper />
             </div>
           </div>
         </main>

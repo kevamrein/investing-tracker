@@ -8,7 +8,21 @@ import { AddCompanyModal } from '@/components/AddCompanyModal'
 import { Button } from '@/components/ui/button'
 import { Plus, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { getCompanies } from '@/app/actions/get-companies'
+import { getCompaniesWithRecommendations } from '@/app/actions/get-companies-with-recommendations'
+
+function RecommendationBadge({ type }: { type: 'buy' | 'sell' | 'hold' }) {
+  const styles = {
+    buy: 'bg-accent text-accent-foreground',
+    sell: 'bg-destructive text-destructive-foreground',
+    hold: 'bg-muted text-muted-foreground',
+  }
+
+  return (
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles[type]}`}>
+      {type.toUpperCase()}
+    </span>
+  )
+}
 
 export function CompanySidebar({ initialCompanies }: { initialCompanies: Company[] }) {
   const [companies, setCompanies] = useState<Company[]>(initialCompanies)
@@ -35,7 +49,7 @@ export function CompanySidebar({ initialCompanies }: { initialCompanies: Company
     const fetchCompanies = async () => {
       setIsLoading(true)
       try {
-        const { docs, hasNextPage } = await getCompanies({
+        const { docs, hasNextPage } = await getCompaniesWithRecommendations({
           page: 1,
           limit: 20,
           query: debouncedSearchTerm,
@@ -59,7 +73,7 @@ export function CompanySidebar({ initialCompanies }: { initialCompanies: Company
     setIsLoading(true)
     try {
       const nextPage = page + 1
-      const { docs, hasNextPage } = await getCompanies({
+      const { docs, hasNextPage } = await getCompaniesWithRecommendations({
         page: nextPage,
         limit: 20,
         query: debouncedSearchTerm,
@@ -173,7 +187,12 @@ export function CompanySidebar({ initialCompanies }: { initialCompanies: Company
                   />
                 </svg>
                 <div className="flex-1">
-                  <div className="font-medium">{company.name}</div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-medium">{company.name}</div>
+                    {(company as any).latestRecommendation && (
+                      <RecommendationBadge type={(company as any).latestRecommendation.type} />
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground/70">{company.ticker}</div>
                 </div>
               </Link>
