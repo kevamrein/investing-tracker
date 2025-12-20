@@ -18,14 +18,27 @@ export async function getCompaniesWithRecommendations({
   const investorId = session?.user?.id
 
   // 1. Get companies with same query logic as get-companies.ts
-  const where = query
-    ? {
-        or: [
-          { name: { contains: query } },
-          { ticker: { contains: query.toUpperCase() } },
-        ],
-      }
-    : {}
+  const where: {
+    or?: Array<{
+      name?: { contains: string }
+      ticker?: { contains: string }
+    }>
+  } = {}
+
+  if (query) {
+    where.or = [
+      {
+        name: {
+          contains: query,
+        },
+      },
+      {
+        ticker: {
+          contains: query.toUpperCase(),
+        },
+      },
+    ]
+  }
 
   const companies = await payload.find({
     collection: 'company',

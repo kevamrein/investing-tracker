@@ -70,7 +70,7 @@ export function YourPositions({ positionsData }: YourPositionsProps) {
         <h2 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
           💼 Your Positions
         </h2>
-        <p className="text-muted-foreground">You don't have any open positions yet.</p>
+        <p className="text-muted-foreground">You don&apos;t have any open positions yet.</p>
       </div>
     )
   }
