@@ -92,8 +92,8 @@ export function OptionTradeFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="text-2xl">
             Enter Paper Trade: {opportunity.ticker}
           </DialogTitle>
@@ -102,8 +102,8 @@ export function OptionTradeFormModal({
             {opportunity.dropPct.toFixed(1)}% | Beat: +{opportunity.epsBeatPct.toFixed(1)}%
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -247,7 +247,8 @@ export function OptionTradeFormModal({
               )}
             </Button>
           </div>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   )

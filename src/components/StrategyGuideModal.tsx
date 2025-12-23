@@ -20,13 +20,13 @@ export function StrategyGuideModal() {
           Strategy Guide
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="text-2xl">Beat + Drop Recovery Strategy</DialogTitle>
           <DialogDescription>Quick reference guide for trading decisions</DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-6 mt-4">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="space-y-6">
           {/* Entry Criteria */}
           <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-4">
             <h3 className="text-lg font-bold text-blue-900 mb-3 flex items-center">
@@ -304,6 +304,7 @@ export function StrategyGuideModal() {
               <li>• <strong>NEW: Day 1 monitoring is CRITICAL</strong> - check stock price at end of first trading day</li>
               <li>• Track all trades to calculate actual win rate and profit factor</li>
             </ul>
+          </div>
           </div>
         </div>
       </DialogContent>

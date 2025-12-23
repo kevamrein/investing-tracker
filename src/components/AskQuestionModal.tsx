@@ -72,8 +72,8 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
           Ask Company Assistant
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] bg-card/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-border/50">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] bg-card/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-border/50 flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="text-2xl font-extrabold text-card-foreground flex items-center">
             <Lightbulb className="w-6 h-6 mr-3 text-primary" />
             Ask Company Assistant
@@ -82,7 +82,8 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
             Ask any question about {companyName} ({ticker}) and get AI-powered insights.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="space-y-6">
           <div>
             <label
               htmlFor="question"
@@ -140,13 +141,14 @@ export function AskQuestionModal({ ticker, companyName }: AskQuestionModalProps)
               <label className="block text-sm font-semibold text-card-foreground mb-3">
                 Assistant Response
               </label>
-              <div className="p-6 bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm max-h-96 overflow-y-auto">
+              <div className="p-6 bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm">
                 <div className="text-base text-card-foreground prose prose-base max-w-none prose-headings:text-card-foreground prose-p:text-card-foreground prose-strong:text-card-foreground prose-code:text-card-foreground prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-p:leading-relaxed">
                   <ReactMarkdown>{answer}</ReactMarkdown>
                 </div>
               </div>
             </div>
           )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
