@@ -13,6 +13,8 @@ export interface CronJobResult {
     context?: any
   }>
   message: string
+  batchSize?: number
+  selectedCompanyIds?: number[]
 }
 
 export interface CronContext {

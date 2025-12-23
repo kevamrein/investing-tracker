@@ -7,6 +7,7 @@ import type { CronContext, CronJobResult } from '../types'
 
 export async function updateInvestmentRecommendationsJob(
   context: CronContext,
+  companyIds?: number[],
 ): Promise<CronJobResult> {
   const startTime = new Date()
   const jobName = 'update-investment-recommendations'
@@ -14,7 +15,10 @@ export async function updateInvestmentRecommendationsJob(
   let errorCount = 0
   const errors: Array<{ message: string; context?: any }> = []
 
-  console.log(`[JOB:${jobName}] Starting...`, { timestamp: startTime.toISOString() })
+  console.log(`[JOB:${jobName}] Starting...`, {
+    timestamp: startTime.toISOString(),
+    companyIds: companyIds || 'all',
+  })
 
   try {
     const { payload, processingUser } = context
@@ -40,13 +44,24 @@ export async function updateInvestmentRecommendationsJob(
       }
     }
 
-    // Fetch all companies
-    const companies = await payload.find({
+    // Fetch companies (filtered by IDs if provided)
+    const queryOptions: any = {
       collection: 'company',
       pagination: false,
-    })
+    }
 
-    if (!companies || companies.docs.length === 0) {
+    if (companyIds && companyIds.length > 0) {
+      queryOptions.where = {
+        id: {
+          in: companyIds,
+        },
+      }
+    }
+
+    const companies = await payload.find(queryOptions)
+    const companyDocs = companies.docs as Company[]
+
+    if (!companyDocs || companyDocs.length === 0) {
       const endTime = new Date()
       console.log(`[JOB:${jobName}] No companies found`)
       return {
@@ -62,7 +77,7 @@ export async function updateInvestmentRecommendationsJob(
     }
 
     // Create company map
-    const companyMap = companies.docs.reduce(
+    const companyMap = companyDocs.reduce(
       (map, company) => {
         map[company.id] = company
         return map
@@ -71,7 +86,7 @@ export async function updateInvestmentRecommendationsJob(
     )
 
     const totalInvestors = investors.docs.length
-    const totalCompanies = companies.docs.length
+    const totalCompanies = companyDocs.length
     const totalCombinations = totalInvestors * totalCompanies
 
     console.log(

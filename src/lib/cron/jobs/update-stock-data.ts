@@ -1,25 +1,43 @@
 import { generateStockInformation } from '@/ai/generate-stock-information'
 import type { CronContext, CronJobResult } from '../types'
+import type { Company } from '@/payload-types'
 
-export async function updateStockDataJob(context: CronContext): Promise<CronJobResult> {
+export async function updateStockDataJob(
+  context: CronContext,
+  companyIds?: number[],
+): Promise<CronJobResult> {
   const startTime = new Date()
   const jobName = 'update-stock-data'
   let processedCount = 0
   let errorCount = 0
   const errors: Array<{ message: string; context?: any }> = []
 
-  console.log(`[JOB:${jobName}] Starting...`, { timestamp: startTime.toISOString() })
+  console.log(`[JOB:${jobName}] Starting...`, {
+    timestamp: startTime.toISOString(),
+    companyIds: companyIds || 'all',
+  })
 
   try {
     const { payload, processingUser } = context
 
-    // Fetch all companies
-    const companies = await payload.find({
+    // Fetch companies (filtered by IDs if provided)
+    const queryOptions: any = {
       collection: 'company',
       pagination: false,
-    })
+    }
 
-    if (!companies || companies.docs.length === 0) {
+    if (companyIds && companyIds.length > 0) {
+      queryOptions.where = {
+        id: {
+          in: companyIds,
+        },
+      }
+    }
+
+    const companies = await payload.find(queryOptions)
+    const companyDocs = companies.docs as Company[]
+
+    if (!companyDocs || companyDocs.length === 0) {
       const endTime = new Date()
       console.log(`[JOB:${jobName}] No companies found`)
       return {
@@ -34,11 +52,11 @@ export async function updateStockDataJob(context: CronContext): Promise<CronJobR
       }
     }
 
-    const totalCompanies = companies.docs.length
+    const totalCompanies = companyDocs.length
     console.log(`[JOB:${jobName}] Found ${totalCompanies} companies to process`)
 
     // CRITICAL FIX: Use for...of loop instead of forEach to properly await async operations
-    for (const company of companies.docs) {
+    for (const company of companyDocs) {
       try {
         console.log(`[JOB:${jobName}] Updating company ${company.ticker}`)
 
