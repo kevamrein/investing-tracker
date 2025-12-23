@@ -67,12 +67,22 @@ interface ScanOptions {
   daysAhead?: number  // For upcoming: look forward (default: 14 days)
   daysBack?: number   // For recent: look backward (default: 3 days - optimal entry window)
   minScore?: number
+  userId?: string     // Optional: for cron jobs using PROCESSING_USER_ID
 }
 
 export async function scanEarningsOpportunities(options: ScanOptions) {
-  const session = await getSession()
-  if (!session?.user?.id) {
-    return { success: false, message: 'User not authenticated' }
+  let userId: string
+
+  if (options.userId) {
+    // Use provided user ID (from cron job with PROCESSING_USER_ID)
+    userId = options.userId
+  } else {
+    // Get from session (normal user request)
+    const session = await getSession()
+    if (!session?.user?.id) {
+      return { success: false, message: 'User not authenticated' }
+    }
+    userId = session.user.id
   }
 
   try {
@@ -104,7 +114,7 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
                 and: [
                   { ticker: { equals: ticker } },
                   { earningsDate: { equals: opportunity.earningsDate } },
-                  { investor: { equals: parseInt(session.user.id) } },
+                  { investor: { equals: parseInt(userId) } },
                 ],
               },
             })
@@ -117,7 +127,7 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
                 data: {
                   ...opportunity,
                   opportunityId: `${ticker}_${new Date(opportunity.earningsDate).getTime()}`,
-                  investor: parseInt(session.user.id),
+                  investor: parseInt(userId),
                   identifiedDate: new Date().toISOString(),
                   status: 'pending',
                 },

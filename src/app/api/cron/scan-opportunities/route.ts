@@ -30,6 +30,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get processing user ID for cron jobs
+    const processingUserId = process.env.PROCESSING_USER_ID
+
+    if (!processingUserId) {
+      console.error('PROCESSING_USER_ID not configured')
+      return NextResponse.json(
+        { error: 'Processing user not configured' },
+        { status: 500 }
+      )
+    }
+
     console.log('Starting automated opportunity scan...')
 
     // Run the scanner for recent opportunities
@@ -38,6 +49,7 @@ export async function GET(request: NextRequest) {
       mode: 'recent',
       daysBack: 7,
       minScore: 70, // Include all viable opportunities
+      userId: processingUserId,
     })
 
     if (!result.success) {
