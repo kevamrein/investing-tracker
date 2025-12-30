@@ -135,6 +135,34 @@ export async function updateInvestmentRecommendationsJob(
                 }
               })
 
+            // Check if recommendation already exists for today
+            const today = new Date()
+            today.setHours(0, 0, 0, 0) // Normalize to start of day
+
+            const existingRecommendation = await payload.find({
+              collection: 'investmentRecommendation',
+              where: {
+                and: [
+                  { investor: { equals: investor.id } },
+                  { company: { equals: companyId } },
+                  {
+                    recommendationDate: {
+                      greater_than_equal: today.toISOString()
+                    }
+                  },
+                ],
+              },
+              limit: 1,
+            })
+
+            if (existingRecommendation.docs.length > 0) {
+              console.log(
+                `[JOB:${jobName}] Skipping: Recommendation already exists for investor ${investor.id}, company ${company.ticker} (created at ${existingRecommendation.docs[0].recommendationDate})`,
+              )
+              processedCount++
+              return
+            }
+
             // Generate recommendation
             const investmentRecommendationResponse =
               await generateInvestmentRecommendationWithLiveSearch({
@@ -161,6 +189,9 @@ export async function updateInvestmentRecommendationsJob(
               overrideAccess: true,
             })
 
+            console.log(
+              `[JOB:${jobName}] Created recommendation for investor ${investor.id}, company ${company.ticker}`,
+            )
             processedCount++
             if (processedCount % 10 === 0) {
               console.log(
