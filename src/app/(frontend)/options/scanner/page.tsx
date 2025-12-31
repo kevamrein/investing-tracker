@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { OptionOpportunityCard } from '@/components/OptionOpportunityCard'
 import { StrategyGuideModal } from '@/components/StrategyGuideModal'
+import { TickerLookupCard } from '@/components/TickerLookupCard'
 import { Loader2, TrendingUp, Filter, RefreshCw } from 'lucide-react'
 
 export default function ScannerPage() {
@@ -89,6 +90,30 @@ export default function ScannerPage() {
     }
   }
 
+  const handleAddToScanner = async (opportunity: any) => {
+    try {
+      const response = await fetch('/api/options/opportunities/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(opportunity),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setScanResult(`✅ ${opportunity.ticker} added to scanner successfully!`)
+        fetchOpportunities()
+      } else {
+        setScanResult(`⚠️ ${data.message}`)
+      }
+    } catch (error) {
+      console.error('Error adding to scanner:', error)
+      setScanResult('❌ Failed to add to scanner. Please try again.')
+    }
+  }
+
   const filteredOpportunities = opportunities.filter((opp) => {
     if (filters.status !== 'all' && opp.status !== filters.status) {
       return false
@@ -138,6 +163,9 @@ export default function ScannerPage() {
           </Button>
         </div>
       </div>
+
+      {/* Quick Ticker Lookup */}
+      <TickerLookupCard onAddToScanner={handleAddToScanner} />
 
       {scanResult && (
         <div

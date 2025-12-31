@@ -3,7 +3,10 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import getSession from './auth-utils'
-import yahooFinance from 'yahoo-finance2'
+import YahooFinance from 'yahoo-finance2'
+
+const yahooFinance = new YahooFinance()
+import { mapSector } from './options-utils'
 
 // Ticker universe - 106 stocks (103 tech + 3 consumer cyclical)
 // Expanded based on sector backtest analysis (Dec 2024)
@@ -177,12 +180,27 @@ export async function scanEarningsOpportunities(options: ScanOptions) {
   }
 }
 
-async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
+// Return type for detailed rejection info
+export interface OpportunityCheckResult {
+  success: boolean
+  opportunity?: any
+  rejection?: {
+    type: 'no_data' | 'no_earnings' | 'earnings_outside_window' | 'no_beat' | 'no_drop' | 'no_price_data'
+    message: string
+    details: any
+  }
+}
+
+export async function checkPostEarningsOpportunity(ticker: string, daysBack: number, returnDetails: boolean = false): Promise<any> {
+  const companyName = ticker // Default, will be updated if we get quote data
+
   try {
     // Get quote data with earnings information
     const quote = await yahooFinance.quoteSummary(ticker, {
       modules: ['earnings', 'price', 'summaryDetail', 'defaultKeyStatistics', 'summaryProfile'],
     }) as any
+
+    const name = quote.price?.shortName || ticker
 
     // Get price history
     const endDate = new Date()
@@ -195,25 +213,106 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       interval: '1d',
     }) as any[]
 
-    if (!history || history.length < 5) return null // Need enough data
+    if (!history || history.length < 5) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'no_data',
+            message: `${ticker} doesn't have enough price history data.`,
+            details: { ticker, companyName: name, historyLength: history?.length || 0 }
+          }
+        }
+      }
+      return null
+    }
 
     // Check for recent earnings
     const earningsData = quote.earnings?.earningsChart?.quarterly?.[0]
-    if (!earningsData || !earningsData.date) return null
+    if (!earningsData || !earningsData.date) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'no_earnings',
+            message: `${ticker} doesn't have recent earnings data in Yahoo Finance.`,
+            details: { ticker, companyName: name }
+          }
+        }
+      }
+      return null
+    }
 
     const earningsDate = new Date(earningsData.date)
     const daysSinceEarnings = Math.floor((endDate.getTime() - earningsDate.getTime()) / (1000 * 60 * 60 * 24))
 
-    if (daysSinceEarnings < 0 || daysSinceEarnings > daysBack) {
-      return null // Earnings not in our scan window
+    if (daysSinceEarnings < 0) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'earnings_outside_window',
+            message: `${ticker} has upcoming earnings on ${earningsDate.toLocaleDateString()} (${Math.abs(daysSinceEarnings)} days from now).`,
+            details: { ticker, companyName: name, earningsDate: earningsDate.toLocaleDateString(), daysUntil: Math.abs(daysSinceEarnings) }
+          }
+        }
+      }
+      return null
+    }
+
+    if (daysSinceEarnings > daysBack) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'earnings_outside_window',
+            message: `${ticker}'s last earnings was ${daysSinceEarnings} days ago on ${earningsDate.toLocaleDateString()} (outside ${daysBack}-day window).`,
+            details: { ticker, companyName: name, earningsDate: earningsDate.toLocaleDateString(), daysSinceEarnings, windowDays: daysBack }
+          }
+        }
+      }
+      return null
     }
 
     // Check for EPS beat
     const reportedEps = earningsData.actual
     const estimatedEps = earningsData.estimate
 
-    if (!reportedEps || !estimatedEps || reportedEps <= estimatedEps) {
-      return null // Didn't beat
+    if (reportedEps === null || reportedEps === undefined || estimatedEps === null || estimatedEps === undefined) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'no_earnings',
+            message: `${ticker} reported earnings on ${earningsDate.toLocaleDateString()} but EPS data is incomplete.`,
+            details: { ticker, companyName: name, earningsDate: earningsDate.toLocaleDateString(), reportedEps, estimatedEps }
+          }
+        }
+      }
+      return null
+    }
+
+    if (reportedEps <= estimatedEps) {
+      const epsBeatPct = ((reportedEps - estimatedEps) / Math.abs(estimatedEps)) * 100
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'no_beat',
+            message: `${ticker} ${epsBeatPct < 0 ? 'missed' : 'met (but didn\'t beat)'} earnings estimates on ${earningsDate.toLocaleDateString()}.`,
+            details: {
+              ticker,
+              companyName: name,
+              earningsDate: earningsDate.toLocaleDateString(),
+              daysSinceEarnings,
+              estimatedEps: estimatedEps.toFixed(2),
+              actualEps: reportedEps.toFixed(2),
+              beatPercent: epsBeatPct.toFixed(1)
+            }
+          }
+        }
+      }
+      return null
     }
 
     const epsBeatPct = ((reportedEps - estimatedEps) / Math.abs(estimatedEps)) * 100
@@ -222,13 +321,47 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
     const prePrices = history.filter(h => new Date(h.date) < earningsDate)
     const postPrices = history.filter(h => new Date(h.date) > earningsDate)
 
-    if (prePrices.length === 0 || postPrices.length === 0) return null
+    if (prePrices.length === 0 || postPrices.length === 0) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'no_price_data',
+            message: `${ticker} beat earnings by ${epsBeatPct.toFixed(1)}% but price data around earnings date is missing.`,
+            details: { ticker, companyName: name, earningsDate: earningsDate.toLocaleDateString(), epsBeatPct: epsBeatPct.toFixed(1) }
+          }
+        }
+      }
+      return null
+    }
 
     const prePrice = prePrices[prePrices.length - 1].close
     const postPrice = postPrices[0].close
     const dropPct = ((postPrice - prePrice) / prePrice) * 100
 
-    if (dropPct > -10.0) return null // Didn't drop enough (minimum 10% based on backtest data)
+    if (dropPct > -10.0) {
+      if (returnDetails) {
+        return {
+          success: false,
+          rejection: {
+            type: 'no_drop',
+            message: `${ticker} beat earnings by ${epsBeatPct.toFixed(1)}% but ${dropPct >= 0 ? 'gained' : 'only dropped'} ${Math.abs(dropPct).toFixed(1)}% (need -10%+).`,
+            details: {
+              ticker,
+              companyName: name,
+              earningsDate: earningsDate.toLocaleDateString(),
+              daysSinceEarnings,
+              epsBeatPct: epsBeatPct.toFixed(1),
+              preEarningsPrice: prePrice.toFixed(2),
+              postEarningsPrice: postPrice.toFixed(2),
+              dropPct: dropPct.toFixed(1),
+              requiredDrop: '-10.0%'
+            }
+          }
+        }
+      }
+      return null
+    }
 
     // Calculate score (from Python scoring logic)
     const score = await calculateOpportunityScore({
@@ -274,7 +407,7 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       entryWindow = 'expired' // Too late, skip
     }
 
-    return {
+    const opportunityData = {
       ticker,
       companyName: quote.price?.shortName || ticker,
       earningsDate: earningsDate.toISOString(),
@@ -291,8 +424,23 @@ async function checkPostEarningsOpportunity(ticker: string, daysBack: number) {
       entryStatus, // 'pending', 'ready', 'skip'
       entryWindow, // 'wait_day1', 'optimal', 'late', 'expired'
     }
-  } catch (error) {
-    // Silent fail - ticker might not have data
+
+    if (returnDetails) {
+      return { success: true, opportunity: opportunityData }
+    }
+    return opportunityData
+  } catch (error: any) {
+    // Return error details if requested
+    if (returnDetails) {
+      return {
+        success: false,
+        rejection: {
+          type: 'no_data',
+          message: `Unable to fetch data for ${ticker}. ${error.message?.includes('429') ? 'Rate limited - please wait and try again.' : 'Please try again.'}`,
+          details: { ticker, error: error.message }
+        }
+      }
+    }
     return null
   }
 }
@@ -324,7 +472,7 @@ async function getUpcomingEarnings(ticker: string, daysAhead: number) {
   }
 }
 
-async function calculateOpportunityScore(params: {
+export async function calculateOpportunityScore(params: {
   dropPct: number
   epsBeatPct: number
   marketCap: number
@@ -398,22 +546,4 @@ async function calculateOpportunityScore(params: {
   }
 
   return Math.min(score, 100)
-}
-
-function mapSector(yahooSector: string): 'technology' | 'communication' | 'healthcare' | 'financial' | 'consumer' | 'other' {
-  const lower = yahooSector.toLowerCase()
-
-  if (lower.includes('technology') || lower.includes('software') || lower.includes('computer')) {
-    return 'technology'
-  } else if (lower.includes('communication')) {
-    return 'communication'
-  } else if (lower.includes('healthcare') || lower.includes('health')) {
-    return 'healthcare'
-  } else if (lower.includes('financial')) {
-    return 'financial'
-  } else if (lower.includes('consumer')) {
-    return 'consumer'
-  }
-
-  return 'other'
 }

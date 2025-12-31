@@ -9,9 +9,11 @@ import { OptionTradeFormModal } from './OptionTradeFormModal'
 interface OptionOpportunityCardProps {
   opportunity: any
   onTradeCreated?: () => void
+  isOneOff?: boolean
+  onAddToScanner?: (opportunity: any) => void
 }
 
-export function OptionOpportunityCard({ opportunity, onTradeCreated }: OptionOpportunityCardProps) {
+export function OptionOpportunityCard({ opportunity, onTradeCreated, isOneOff = false, onAddToScanner }: OptionOpportunityCardProps) {
   const [showTradeModal, setShowTradeModal] = useState(false)
 
   const getScoreColor = (score: number) => {
@@ -43,8 +45,15 @@ export function OptionOpportunityCard({ opportunity, onTradeCreated }: OptionOpp
                 </div>
               )}
             </div>
-            <div className={`px-4 py-2 rounded-lg font-bold text-lg border-2 ${getScoreColor(opportunity.score)}`}>
-              {opportunity.score}
+            <div className="flex flex-col items-end gap-1">
+              {isOneOff && (
+                <div className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
+                  Preview
+                </div>
+              )}
+              <div className={`px-4 py-2 rounded-lg font-bold text-lg border-2 ${getScoreColor(opportunity.score)}`}>
+                {opportunity.score}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -169,44 +178,64 @@ export function OptionOpportunityCard({ opportunity, onTradeCreated }: OptionOpp
           )}
 
           {/* Action Button */}
-          {opportunity.status === 'pending' && opportunity.score >= 70 && (
-            <>
-              {/* Only show trade button if ready to trade */}
-              {(opportunity.entryStatus === 'ready' || !opportunity.entryStatus) && opportunity.entryStatus !== 'skip' && (
+          {isOneOff ? (
+            // One-off lookup: Show "Add to Scanner" button
+            opportunity.score >= 70 && (
+              <div className="space-y-2">
+                <div className="text-xs text-gray-600 text-center bg-blue-50 py-2 rounded">
+                  This is a temporary lookup. Add to scanner to track and trade.
+                </div>
                 <Button
-                  onClick={() => setShowTradeModal(true)}
+                  onClick={() => onAddToScanner?.(opportunity)}
                   className="w-full h-12 text-lg"
                   size="lg"
-                  variant={opportunity.entryWindow === 'late' ? 'outline' : 'default'}
+                  variant="default"
                 >
-                  {opportunity.entryWindow === 'late' ? 'Enter Trade (Late Entry)' : 'Enter Paper Trade'}
+                  Add to Scanner & Track
                 </Button>
-              )}
+              </div>
+            )
+          ) : (
+            // Regular scanner opportunity: Show trade buttons
+            opportunity.status === 'pending' && opportunity.score >= 70 && (
+              <>
+                {/* Only show trade button if ready to trade */}
+                {(opportunity.entryStatus === 'ready' || !opportunity.entryStatus) && opportunity.entryStatus !== 'skip' && (
+                  <Button
+                    onClick={() => setShowTradeModal(true)}
+                    className="w-full h-12 text-lg"
+                    size="lg"
+                    variant={opportunity.entryWindow === 'late' ? 'outline' : 'default'}
+                  >
+                    {opportunity.entryWindow === 'late' ? 'Enter Trade (Late Entry)' : 'Enter Paper Trade'}
+                  </Button>
+                )}
 
-              {/* Disabled button for skip status */}
-              {opportunity.entryStatus === 'skip' && (
-                <Button
-                  disabled
-                  className="w-full h-12 text-lg"
-                  size="lg"
-                  variant="outline"
-                >
-                  Skip This Trade (Day 1 Failed)
-                </Button>
-              )}
+                {/* Disabled button for skip status */}
+                {opportunity.entryStatus === 'skip' && (
+                  <Button
+                    disabled
+                    className="w-full h-12 text-lg"
+                    size="lg"
+                    variant="outline"
+                  >
+                    Skip This Trade (Day 1 Failed)
+                  </Button>
+                )}
 
-              {/* Waiting for Day 1 button */}
-              {opportunity.entryWindow === 'wait_day1' && (
-                <Button
-                  disabled
-                  className="w-full h-12 text-lg"
-                  size="lg"
-                  variant="outline"
-                >
-                  ⏳ Waiting for Day 1 Close
-                </Button>
-              )}
-            </>
+                {/* Waiting for Day 1 button */}
+                {opportunity.entryWindow === 'wait_day1' && (
+                  <Button
+                    disabled
+                    className="w-full h-12 text-lg"
+                    size="lg"
+                    variant="outline"
+                  >
+                    ⏳ Waiting for Day 1 Close
+                  </Button>
+                )}
+              </>
+            )
           )}
 
           {opportunity.status === 'traded' && (
