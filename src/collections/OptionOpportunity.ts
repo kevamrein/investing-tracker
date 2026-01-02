@@ -203,6 +203,51 @@ export const OptionOpportunity: CollectionConfig = {
       },
     },
 
+    // Entry Timing Data
+    {
+      name: 'daysSinceEarnings',
+      label: 'Days Since Earnings',
+      type: 'number',
+      admin: {
+        description: 'Number of days since earnings announcement',
+      },
+    },
+    {
+      name: 'day1Change',
+      label: 'Day 1 Change',
+      type: 'number',
+      admin: {
+        description: 'Price change percentage on Day 1 after earnings',
+      },
+    },
+    {
+      name: 'entryStatus',
+      label: 'Entry Status',
+      type: 'select',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Ready', value: 'ready' },
+        { label: 'Skip', value: 'skip' },
+      ],
+      admin: {
+        description: 'Entry readiness status based on Day 1 price action',
+      },
+    },
+    {
+      name: 'entryWindow',
+      label: 'Entry Window',
+      type: 'select',
+      options: [
+        { label: 'Wait for Day 1', value: 'wait_day1' },
+        { label: 'Optimal (Day 1-3)', value: 'optimal' },
+        { label: 'Late (Day 4-5)', value: 'late' },
+        { label: 'Expired', value: 'expired' },
+      ],
+      admin: {
+        description: 'Entry timing window status',
+      },
+    },
+
     // Status Tracking
     {
       name: 'status',
