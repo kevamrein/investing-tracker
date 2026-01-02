@@ -239,7 +239,7 @@ export function TickerLookupCard({ onAddToScanner }: TickerLookupCardProps) {
                           </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-2">
-                          Beat earnings but didn't drop enough. Strategy requires minimum 10% drop.
+                          Beat earnings but didn&apos;t drop enough. Strategy requires minimum 10% drop.
                         </div>
                       </div>
                     )}
@@ -312,7 +312,7 @@ export function TickerLookupCard({ onAddToScanner }: TickerLookupCardProps) {
               <li>Enter any stock ticker (1-5 letters)</li>
               <li>System checks for recent earnings beat + price drop (last 7 days)</li>
               <li>Results shown instantly without saving to database</li>
-              <li>Click "Add to Scanner" on qualifying opportunities to track them</li>
+              <li>Click &quot;Add to Scanner&quot; on qualifying opportunities to track them</li>
             </ul>
           </div>
         )}

@@ -57,26 +57,12 @@ export async function POST(request: NextRequest) {
       collection: 'option-opportunities',
       draft: false,
       data: {
-        ticker: opportunity.ticker,
-        companyName: opportunity.companyName,
+        ...opportunity,
         opportunityId: `${opportunity.ticker}_${new Date(opportunity.earningsDate).getTime()}`,
-        earningsDate: opportunity.earningsDate,
-        dropPct: opportunity.dropPct,
-        epsBeatPct: opportunity.epsBeatPct,
-        score: opportunity.score,
-        preEarningsPrice: opportunity.preEarningsPrice,
-        postEarningsPrice: opportunity.postEarningsPrice,
-        currentPrice: opportunity.currentPrice,
-        marketCap: opportunity.marketCap,
-        sector: opportunity.sector,
-        daysSinceEarnings: opportunity.daysSinceEarnings,
-        day1Change: opportunity.day1Change,
-        entryStatus: opportunity.entryStatus,
-        entryWindow: opportunity.entryWindow,
         investor: parseInt(userId),
         identifiedDate: new Date().toISOString(),
         status: 'pending',
-      },
+      } as any,
     })
 
     return NextResponse.json({
